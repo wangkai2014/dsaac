@@ -226,6 +226,51 @@ void list_clear(struct list *head)
     }
 }
 
+int list_create_from_int_arr(struct list **head, int *arr, int num)
+{
+    int pos;
+    int result;
+    struct list *node = NULL;
+    struct list *cur = NULL;
+
+    result = list_init(head, sizeof(int));
+    if (SUCCESS != result)
+    {
+        error("failed to initialize list!");
+        return result;
+    }
+
+    cur = *head;
+
+    for (pos = 0; pos < num; pos++)
+    {
+        result = list_create(&node, arr + pos);
+        if (SUCCESS != result)
+        {
+            error("failed to create list!");
+            return result;
+        }
+
+        cur->next = node;
+        cur = node;
+    }
+
+    return SUCCESS;
+}
+
+void list_print_int(struct list *head)
+{
+    struct list *cur = head->next;
+
+    while (NULL != cur)
+    {
+        printf("%d ", *(int *)cur->data);
+        cur = cur->next;
+    }
+
+    printf("\n");
+}
+
 static int data_is_equal(void *first, void *second)
 {
     return ((memcmp((void *)first, (void *)second, data_size) == 0)? TRUE : FALSE);

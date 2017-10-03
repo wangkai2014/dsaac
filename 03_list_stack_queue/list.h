@@ -21,4 +21,6 @@ int list_insert(struct list *head, struct list *prev, void *data);
 void list_del(struct list *head, void *data);
 void list_clear(struct list *head);
 
+int list_create_from_int_arr(struct list **head, int *arr, int num);
+void list_print_int(struct list *head);
 #endif
