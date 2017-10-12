@@ -226,6 +226,44 @@ void list_clear(struct list *head)
     }
 }
 
+int list_copy(struct list **desc, struct list *src, int elem_size)
+{
+    int result = 0;
+    struct list *cur_src = NULL;
+    struct list *cur_desc = NULL;
+
+    if ((NULL == desc) || (NULL == src))
+    {
+        error("null pointer!");
+        return NUL_PTR;
+    }
+
+    result = list_init(desc, elem_size);
+    if (SUCCESS != result)
+    {
+        error("failed to init list desc!");
+        return result;
+    }
+
+    cur_src = src->next;
+    cur_desc = *desc;
+    
+    while (NULL != cur_src)
+    {
+        result = list_insert(*desc, cur_desc, cur_src->data);
+        if (SUCCESS != result)
+        {
+            error("failed to insert list!");
+            return result;
+        }
+
+        cur_desc = cur_desc->next;
+        cur_src = cur_src->next;
+    }
+
+    return SUCCESS;
+}
+
 int list_create_from_int_arr(struct list **head, int *arr, int num)
 {
     int pos;

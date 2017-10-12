@@ -10,17 +10,17 @@ int main()
 {
     struct list *poly_first = NULL;
     struct list *poly_second = NULL;
-    struct list *poly_add = NULL;
+    struct list *poly_multiply = NULL;
     int result = 0;
 
-    result = init_polynomial(&poly_first, 6);
+    result = init_polynomial(&poly_first, 4);
     if (SUCCESS != result)
     {
         error("failed to init poly_first!");
         return 0;
     }
 
-    result = init_polynomial(&poly_second, 8);
+    result = init_polynomial(&poly_second, 5);
     if (SUCCESS != result)
     {
         error("failed to init poly_second!");
@@ -32,20 +32,20 @@ int main()
     printf("poly_2:\n");
     list_print_poly(poly_second);
 
-    result = add_polynomials(poly_first, poly_second, &poly_add);
+    result = multiply_polynomials(poly_first, poly_second, &poly_multiply);
     if (SUCCESS != result)
     {
-        error("failed to add polynomials!");
+        error("failed to multiply polynomials!");
         return 0;
     }
 
-    printf("poly_1 + poly_2:\n");
-    list_print_poly(poly_add);
+    printf("poly_1 * poly_2:\n");
+    list_print_poly(poly_multiply);
 
 
     list_clear(poly_first);
     list_clear(poly_second);
-    list_clear(poly_add);
+    list_clear(poly_multiply);
 
     return 0;
 }
