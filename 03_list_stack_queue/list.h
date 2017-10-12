@@ -23,4 +23,7 @@ void list_clear(struct list *head);
 
 int list_create_from_int_arr(struct list **head, int *arr, int num);
 void list_print_int(struct list *head);
+
+int list_create_from_poly_arr(struct list **head, void *arr, int num);
+void list_print_poly(struct list *head);
 #endif

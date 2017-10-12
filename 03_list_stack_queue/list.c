@@ -258,6 +258,38 @@ int list_create_from_int_arr(struct list **head, int *arr, int num)
     return SUCCESS;
 }
 
+int list_create_from_poly_arr(struct list **head, void *arr, int num)
+{
+    int pos;
+    int result;
+    struct list *node = NULL;
+    struct list *cur = NULL;
+
+    result = list_init(head, sizeof(struct polynomial));
+    if (SUCCESS != result)
+    {
+        error("failed to initialize list!");
+        return result;
+    }
+
+    cur = *head;
+
+    for (pos = 0; pos < num; pos++)
+    {
+        result = list_create(&node, (struct polynomial*)arr + pos);
+        if (SUCCESS != result)
+        {
+            error("failed to create list!");
+            return result;
+        }
+
+        cur->next = node;
+        cur = node;
+    }
+
+    return SUCCESS;
+}
+
 void list_print_int(struct list *head)
 {
     struct list *cur = head->next;
@@ -266,6 +298,26 @@ void list_print_int(struct list *head)
     {
         printf("%d ", *(int *)cur->data);
         cur = cur->next;
+    }
+
+    printf("\n");
+}
+
+void list_print_poly(struct list *head)
+{
+    struct list *cur = head->next;
+    struct polynomial *data = NULL;
+
+    while (NULL != cur)
+    {
+        data = (struct polynomial *)cur->data;
+        printf("%dx^%d ", data->coef, data->expo);
+        cur = cur->next;
+
+        if (NULL != cur)
+        {
+            printf("+ ");
+        }
     }
 
     printf("\n");
