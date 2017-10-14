@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
 #include "utils.h"
 #include "list.h"
 #include "polynomial.h"
