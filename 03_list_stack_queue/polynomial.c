@@ -2,6 +2,8 @@
 #include "list.h"
 #include "polynomial.h"
 
+#define MAX_COEFFICIENT  5
+
 int generate_polynomial_arr(struct polynomial **poly_arr, int max_expo, int *term_num)
 {
     struct polynomial *arr = NULL;
@@ -24,7 +26,7 @@ int generate_polynomial_arr(struct polynomial **poly_arr, int max_expo, int *ter
 
     for (expo = 0; expo <= max_expo; expo++)
     {
-        coef = rand() % max_expo;
+        coef = rand() % MAX_COEFFICIENT;
         if (coef > 0)
         {
             arr[pos].coef = coef;
@@ -220,6 +222,103 @@ int multiply_polynomials(struct list *poly_first, struct list *poly_second, stru
         list_clear(cur_multiply);
 
         cur_first = cur_first->next;
+    }
+
+    return SUCCESS;
+}
+
+int power_polynomial_with_multiply(struct list *poly, int expo, struct list **power_poly)
+{
+    int result = 0;
+    int cur_expo = 0;
+    struct list *first_poly = NULL;
+    struct list *product_poly = NULL;
+
+    if ((NULL == poly) || (NULL == power_poly))
+    {
+        error("null pointer!");
+        return NUL_PTR;
+    }
+
+    result = list_copy(&first_poly, poly, sizeof(struct polynomial));
+    if (SUCCESS != result)
+    {
+        error("failed to copy list!");
+        return result;
+    }
+
+    for (cur_expo = 1; cur_expo < expo; cur_expo++)
+    {
+        result = multiply_polynomials(first_poly, poly, &product_poly);
+        if (SUCCESS != result)
+        {
+            error("failed to multiply polynomial!");
+            return result;
+        }
+
+        list_clear(first_poly);
+        first_poly = product_poly;
+        product_poly = NULL;
+    }
+
+    *power_poly = first_poly;
+
+    return SUCCESS;
+}
+
+int power_polynomial_with_square(struct list *poly, int expo, struct list **power_poly)
+{
+    struct list *product_poly = NULL;
+    int result = 0;
+
+    if ((NULL == poly) || (NULL == power_poly))
+    {
+        error("null pointer!");
+        return NUL_PTR;
+    }
+
+    if (expo == 1)
+    {
+        result = list_copy(power_poly, poly, sizeof(struct polynomial));
+        if (SUCCESS != result)
+        {
+            error("failed to copy list!");
+        }
+
+        return result;
+    }
+
+    result = power_polynomial_with_square(poly, expo/2, &product_poly);
+    if (SUCCESS != result)
+    {
+        error("failed to power polynomial with square!");
+        return result;
+    }
+
+    result = multiply_polynomials(product_poly, product_poly, power_poly);
+    if (SUCCESS != result)
+    {
+        error("failed to multiply polynomials!");
+        list_clear(product_poly);
+        return result;
+    }
+
+    list_clear(product_poly);
+
+    if (expo % 2 == 1)
+    {
+        product_poly = *power_poly;
+        *power_poly = NULL;
+
+        result = multiply_polynomials(product_poly, poly, power_poly);
+        if (SUCCESS != result)
+        {
+            error("failed to multiply polynomials!");
+            list_clear(product_poly);
+            return result;
+        }
+
+        list_clear(product_poly);
     }
 
     return SUCCESS;

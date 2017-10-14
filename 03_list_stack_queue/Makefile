@@ -1,7 +1,7 @@
 CFLAGS = -g
 PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		03_swap_dlist_elements 04_intersect_list 05_union_list \
-		06_add_polynomials 07_multiply_polynomials \
+		06_add_polynomials 07_multiply_polynomials 08_power_polynomials \
 
 00_OBJ = 00_test_list.o list.o 
 01_OBJ = 01_print_list.o list.o
@@ -12,6 +12,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 05_OBJ = 05_union_list.o list.o
 06_OBJ = 06_add_polynomials.o polynomial.o list.o
 07_OBJ = 07_multiply_polynomials.o polynomial.o list.o
+08_OBJ = 08_power_polynomials.o polynomial.o list.o
 
 all: $(PROGS)
 
@@ -41,6 +42,9 @@ all: $(PROGS)
 
 07_multiply_polynomials: $(07_OBJ)
 	cc $(CFLAGS) -o $@ $(07_OBJ)
+
+08_power_polynomials: $(08_OBJ)
+	cc $(CFLAGS) -o $@ $(08_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
