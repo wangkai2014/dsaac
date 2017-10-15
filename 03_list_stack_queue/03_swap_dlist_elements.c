@@ -18,7 +18,7 @@ int main()
     result = list_create_from_int_arr(&head, arr, 10);
     if (SUCCESS != result)
     {
-        error("failed to create list!");
+        print_error("failed to create list!");
         return 0;
     }
 
@@ -40,7 +40,7 @@ void list_swap_elements(struct list *head, struct list *prev)
 
     if ((NULL == head) || (NULL == prev))
     {
-        error("null pointer!");
+        print_error("null pointer!");
         return;
     }
 

@@ -17,6 +17,7 @@ enum err_code
     OVERFLOW  = 3,
     MALLOC_FAIL  = 4,
     NUL_PTR = 5,
+    OUT_OF_RANGE = 6,
 };
 
 struct polynomial
@@ -25,6 +26,6 @@ struct polynomial
     int expo;  /* exponent */
 };
 
-void error(char *msg);
+void print_error(char *msg);
 
 #endif

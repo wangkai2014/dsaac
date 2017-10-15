@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "list.h"
+#include "utils.h"
 
-static inline void error(char *msg)
+inline void print_error(char *msg)
 {
-    printf("func %s, line %d, %s\n", __FUNCTION__, __LINE__, msg);
+    printf("%s\n", msg);
 }

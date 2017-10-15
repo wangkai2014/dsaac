@@ -12,14 +12,14 @@ int main()
     result = init_polynomial(&poly_first, 6);
     if (SUCCESS != result)
     {
-        error("failed to init poly_first!");
+        print_error("failed to init poly_first!");
         return 0;
     }
 
     result = init_polynomial(&poly_second, 8);
     if (SUCCESS != result)
     {
-        error("failed to init poly_second!");
+        print_error("failed to init poly_second!");
         return 0;
     }
 
@@ -31,7 +31,7 @@ int main()
     result = add_polynomials(poly_first, poly_second, &poly_add);
     if (SUCCESS != result)
     {
-        error("failed to add polynomials!");
+        print_error("failed to add polynomials!");
         return 0;
     }
 

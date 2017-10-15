@@ -15,7 +15,7 @@ int main()
     result = init_polynomial(&poly, poly_expo);
     if (SUCCESS != result)
     {
-        error("failed to init polynomial!");
+        print_error("failed to init polynomial!");
         return 0;
     }
 
@@ -43,7 +43,7 @@ static void test_power_polynomial_with_multiply(struct list *poly, int expo)
     result = power_polynomial_with_multiply(poly, expo, &power_poly);
     if (SUCCESS != result)
     {
-        error("failed to power polynomial with multiply!");
+        print_error("failed to power polynomial with multiply!");
         return;
     }
 
@@ -75,7 +75,7 @@ static void test_power_polynomial_with_square(struct list *poly, int expo)
     result = power_polynomial_with_square(poly, expo, &power_poly);
     if (SUCCESS != result)
     {
-        error("failed to power polynomial with square!");
+        print_error("failed to power polynomial with square!");
         return;
     }
 

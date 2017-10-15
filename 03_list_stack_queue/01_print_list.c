@@ -16,7 +16,7 @@ int main()
     result = list_create_from_int_arr(&head, arr, 10);
     if (SUCCESS != result)
     {
-        error("failed to create list!");
+        print_error("failed to create list!");
     }
     else
     {

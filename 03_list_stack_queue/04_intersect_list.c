@@ -26,21 +26,21 @@ int main()
     result = list_create_from_int_arr(&head_a, arr_a, 10);
     if (SUCCESS != result)
     {
-        error("failed to create list a!");
+        print_error("failed to create list a!");
         return 0;
     } 
     
     result = list_create_from_int_arr(&head_b, arr_b, 8); 
     if (SUCCESS != result)
     {
-        error("failed to create list b!");
+        print_error("failed to create list b!");
         return 0;
     }
 
     head_intersect = list_intersect(head_a, head_b);
     if (NULL == head_intersect)
     {
-        error("failed to intersect list a and list b!");
+        print_error("failed to intersect list a and list b!");
         return 0;
     }
 
@@ -60,14 +60,14 @@ struct list *list_intersect(struct list *head_a, struct list *head_b)
 
     if ((NULL == head_a) || (NULL == head_b))
     {
-        error("null pointer!");
+        print_error("null pointer!");
         return NULL;
     }
 
     result = list_init(&head_intersect, sizeof(int));
     if (SUCCESS != result)
     {
-        error("failed to init list intersect!");
+        print_error("failed to init list intersect!");
         return NULL;
     }
 
@@ -90,7 +90,7 @@ struct list *list_intersect(struct list *head_a, struct list *head_b)
             result = list_insert(head_intersect, cur_intersect, cur_a->data);
             if (SUCCESS != result)
             {
-                error("failed to insert list!");
+                print_error("failed to insert list!");
                 return NULL;
             }
 

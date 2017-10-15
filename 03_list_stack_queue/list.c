@@ -13,7 +13,7 @@ int list_init(struct list** head, int elem_size)
     data = malloc(data_size);
     if (NULL == data)
     {
-        error("failed to malloc memory!");
+        print_error("failed to malloc memory!");
         return MALLOC_FAIL;
     }
 
@@ -29,14 +29,14 @@ int list_create(struct list** head, void *data)
     root = (struct list *)malloc(sizeof(struct list));
     if (NULL == root)
     {
-        error("failed to malloc memory for list!");
+        print_error("failed to malloc memory for list!");
         return MALLOC_FAIL;
     }
 
     root->data = malloc(data_size);
     if (NULL == root->data)
     {
-        error("failed to malloc memory for list's data!");
+        print_error("failed to malloc memory for list's data!");
         return MALLOC_FAIL;
     }
 
@@ -92,7 +92,7 @@ int list_push_back(struct list *head, void *data)
     result = list_create(&last, data);
     if (SUCCESS != result)
     {
-        error("failed to create list!");
+        print_error("failed to create list!");
         return result;
     }
 
@@ -114,7 +114,7 @@ int list_push_front(struct list *head, void *data)
     result = list_create(&first, data);
     if (SUCCESS != result)
     {
-        error("failed to create list!");
+        print_error("failed to create list!");
         return result;
     }
 
@@ -130,7 +130,7 @@ int list_pop_back(struct list *head, void *data)
 
     if (list_is_empty(head))
     {
-        error("pop empty list!");
+        print_error("pop empty list!");
         return UNDERFLOW; 
     }
 
@@ -154,7 +154,7 @@ int list_pop_front(struct list *head, void *data)
 
     if (list_is_empty(head))
     {
-        error("pop empty list!");
+        print_error("pop empty list!");
         return UNDERFLOW; 
     }
 
@@ -176,7 +176,7 @@ int list_insert(struct list *head, struct list *prev, void *data)
     result = list_create(&cur, data);
     if (SUCCESS != result)
     {
-        error("failed to create list!");
+        print_error("failed to create list!");
         return result;
     }
 
@@ -213,7 +213,7 @@ void list_clear(struct list *head)
     data = malloc(data_size);
     if (NULL == data)
     {
-        error("failed to malloc memory for list's data.");
+        print_error("failed to malloc memory for list's data.");
         return;
     }
 
@@ -231,14 +231,14 @@ int list_copy(struct list **desc, struct list *src, int elem_size)
 
     if ((NULL == desc) || (NULL == src))
     {
-        error("null pointer!");
+        print_error("null pointer!");
         return NUL_PTR;
     }
 
     result = list_init(desc, elem_size);
     if (SUCCESS != result)
     {
-        error("failed to init list desc!");
+        print_error("failed to init list desc!");
         return result;
     }
 
@@ -250,7 +250,7 @@ int list_copy(struct list **desc, struct list *src, int elem_size)
         result = list_insert(*desc, cur_desc, cur_src->data);
         if (SUCCESS != result)
         {
-            error("failed to insert list!");
+            print_error("failed to insert list!");
             return result;
         }
 
@@ -271,7 +271,7 @@ int list_create_from_int_arr(struct list **head, int *arr, int num)
     result = list_init(head, sizeof(int));
     if (SUCCESS != result)
     {
-        error("failed to initialize list!");
+        print_error("failed to initialize list!");
         return result;
     }
 
@@ -282,7 +282,7 @@ int list_create_from_int_arr(struct list **head, int *arr, int num)
         result = list_create(&node, arr + pos);
         if (SUCCESS != result)
         {
-            error("failed to create list!");
+            print_error("failed to create list!");
             return result;
         }
 
@@ -303,7 +303,7 @@ int list_create_from_poly_arr(struct list **head, void *arr, int num)
     result = list_init(head, sizeof(struct polynomial));
     if (SUCCESS != result)
     {
-        error("failed to initialize list!");
+        print_error("failed to initialize list!");
         return result;
     }
 
@@ -314,7 +314,7 @@ int list_create_from_poly_arr(struct list **head, void *arr, int num)
         result = list_create(&node, (struct polynomial*)arr + pos);
         if (SUCCESS != result)
         {
-            error("failed to create list!");
+            print_error("failed to create list!");
             return result;
         }
 

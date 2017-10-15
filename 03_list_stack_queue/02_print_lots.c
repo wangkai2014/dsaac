@@ -20,14 +20,14 @@ int main()
     result = list_create_from_int_arr(&head_l, arr_l, 10);
     if (SUCCESS != result)
     {
-        error("failed to create list l!");
+        print_error("failed to create list l!");
         return 0;
     }
 
     result = list_create_from_int_arr(&head_p, arr_p, sizeof(arr_p) / sizeof(int));
     if (SUCCESS != result)
     {
-        error("failed to create list p!");
+        print_error("failed to create list p!");
         return 0;
     }
 
@@ -45,7 +45,7 @@ void print_lots(struct list *head_l, struct list *head_p)
 
     if ((NULL == head_l) || (NULL == head_p))
     {
-        error("null pointer!");
+        print_error("null pointer!");
         return;
     }
 

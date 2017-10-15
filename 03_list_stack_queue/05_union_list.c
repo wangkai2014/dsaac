@@ -26,21 +26,21 @@ int main()
     result = list_create_from_int_arr(&head_a, arr_a, 10);
     if (SUCCESS != result)
     {
-        error("failed to create list a!");
+        print_error("failed to create list a!");
         return 0;
     } 
     
     result = list_create_from_int_arr(&head_b, arr_b, 8); 
     if (SUCCESS != result)
     {
-        error("failed to create list b!");
+        print_error("failed to create list b!");
         return 0;
     }
 
     head_union = list_union(head_a, head_b);
     if (NULL == head_union)
     {
-        error("failed to union list a and list b!");
+        print_error("failed to union list a and list b!");
         return 0;
     }
 
@@ -61,14 +61,14 @@ struct list *list_union(struct list *head_a, struct list *head_b)
 
     if ((NULL == head_a) || (NULL == head_b))
     {
-        error("null pointer!");
+        print_error("null pointer!");
         return NULL;
     }
 
     result = list_init(&head_union, sizeof(int));
     if (SUCCESS != result)
     {
-        error("failed to init list!");
+        print_error("failed to init list!");
         return NULL;
     }
 
@@ -98,7 +98,7 @@ struct list *list_union(struct list *head_a, struct list *head_b)
         result = list_insert(head_union, cur_union, data);
         if (SUCCESS != result)
         {
-            error("failed to insert list!");
+            print_error("failed to insert list!");
             return NULL;
         }
 
@@ -115,7 +115,7 @@ struct list *list_union(struct list *head_a, struct list *head_b)
         result = list_insert(head_union, cur_union, cur_a->data);
         if (SUCCESS != result)
         {
-            error("failed to insert list!");
+            print_error("failed to insert list!");
             return NULL;
         }
 

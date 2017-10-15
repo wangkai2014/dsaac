@@ -1,5 +1,3 @@
-#include<stdio.h>
-#include<stdlib.h>
 #include "utils.h"
 #include "list.h"
 
@@ -17,7 +15,7 @@ int main()
     result = list_init(&head, sizeof(int));
     if (SUCCESS != result)
     {
-        error("failed to initialize list!");
+        print_error("failed to initialize list!");
         return 0;
     }
 
