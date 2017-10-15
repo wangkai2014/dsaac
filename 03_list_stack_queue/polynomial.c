@@ -66,6 +66,20 @@ int init_polynomial(struct list **poly, int max_expo)
     return SUCCESS;
 }
 
+int zero_polynomial(struct list **poly)
+{
+    struct polynomial data = {0, 0};
+
+    return list_create_from_poly_arr(poly, &data, 1);
+}
+
+int one_polynomial(struct list **poly)
+{
+    struct polynomial data = {1, 0};
+
+    return list_create_from_poly_arr(poly, &data, 1);
+}
+
 int add_polynomials(struct list *poly_first, struct list *poly_second, struct list **poly_add)
 {
     struct list *cur_first = NULL;
@@ -437,12 +451,37 @@ int multiply_polynomials_with_carry(struct list *poly_first, struct list *poly_s
     return SUCCESS;
 }
 
+/* 注意：输出的二进制字符串从左到右对应从低位到高位 */
+int binary_expression(int num, char *bit_arr)
+{
+    int pos = 0;
+
+    if (NULL == bit_arr)
+    {
+        print_error("null pointer!");
+        return NUL_PTR;
+    }
+
+    while (num > 0)
+    {
+        bit_arr[pos++] = '0' + (num % 2);
+        num = num / 2;
+    }
+
+    bit_arr[pos] = '\0';
+}
+
 int power_polynomial_with_multiply_carry(struct list *poly, int expo, struct list **power_poly)
 {
+    char bit_str[MAX_BIT_NUM];  /* int型整数*/
+    int bit_num = 0;
     int result = 0;
+    int pos = 0;
     int cur_expo = 0;
-    struct list *first_poly = NULL;
+    struct list *cur_poly = NULL;
+    struct list *square_poly = NULL;
     struct list *product_poly = NULL;
+    struct list *last_product_poly = NULL;  
 
     if ((NULL == poly) || (NULL == power_poly))
     {
@@ -450,28 +489,52 @@ int power_polynomial_with_multiply_carry(struct list *poly, int expo, struct lis
         return NUL_PTR;
     }
 
-    result = list_copy(&first_poly, poly, sizeof(struct polynomial));
-    if (SUCCESS != result)
+    if (expo < 1)
     {
-        print_error("failed to copy list!");
-        return result;
+        print_error("invalid exponent!");
+        return OUT_OF_RANGE;
     }
 
-    for (cur_expo = 1; cur_expo < expo; cur_expo++)
+    binary_expression(expo, bit_str);
+    bit_num = strlen(bit_str);
+
+    if (bit_str[0] == '1')
     {
-        result = multiply_polynomials_with_carry(first_poly, poly, &product_poly);
+        last_product_poly = poly;
+    }
+    else
+    {
+        one_polynomial(&last_product_poly);
+    }
+
+    cur_poly = poly;
+
+    for (pos = 1; pos < bit_num; pos++)
+    {
+        result = multiply_polynomials_with_carry(cur_poly, cur_poly, &square_poly);
         if (SUCCESS != result)
         {
-            print_error("failed to multiply polynomial!");
+            print_error("failed to multiply polynomials with carry!");
             return result;
         }
 
-        list_clear(first_poly);
-        first_poly = product_poly;
-        product_poly = NULL;
+        cur_poly = square_poly;
+
+        if (bit_str[pos] == '1')
+        {
+            result = multiply_polynomials_with_carry(last_product_poly, square_poly, &product_poly);
+            if (SUCCESS != result)
+            {
+                print_error("failed to multiply polynomials with carry!");
+                return result;
+            }
+
+            list_clear(last_product_poly);
+            last_product_poly = product_poly;
+        }
     }
 
-    *power_poly = first_poly;
+    *power_poly = product_poly;
 
     return SUCCESS;
 }
@@ -530,6 +593,86 @@ int power_polynomial_with_square_carry(struct list *poly, int expo, struct list 
 
         list_clear(product_poly);
     }
+
+    return SUCCESS;
+}
+
+int add_polynomials_with_carry(struct list *poly_first, struct list *poly_second, struct list **poly_add)
+{
+    struct list *cur_first = NULL;
+    struct list *cur_second = NULL;
+    struct list *cur_add = NULL;
+    struct polynomial data;
+    int result = 0;
+
+    if ((poly_first == NULL) || (poly_second == NULL) || (poly_add == NULL))
+    {
+        print_error("null pointer!");
+        return NUL_PTR;
+    }
+
+    result = list_init(poly_add, sizeof(struct polynomial));
+    if (SUCCESS != result)
+    {
+        print_error("failed to init list poly_add!");
+        return result;
+    }
+
+    cur_first = poly_first->next;
+    cur_second = poly_second->next;
+    cur_add = *poly_add;
+
+    while ((NULL != cur_first) && (NULL != cur_second))
+    {
+        if ((*(struct polynomial*)cur_first->data).expo < (*(struct polynomial*)cur_second->data).expo)
+        {
+            data.expo = ((struct polynomial *)cur_first->data)->expo;
+            data.coef = ((struct polynomial *)cur_first->data)->coef;
+            cur_first = cur_first->next;
+        }
+        else if ((*(struct polynomial*)cur_first->data).expo > (*(struct polynomial*)cur_second->data).expo)
+        {
+            data.expo = ((struct polynomial *)cur_second->data)->expo;
+            data.coef = ((struct polynomial *)cur_second->data)->coef;
+            cur_second = cur_second->next;
+        }
+        else
+        {
+            data.expo = ((struct polynomial *)cur_first->data)->expo;
+            data.coef = ((struct polynomial *)cur_first->data)->coef + ((struct polynomial *)cur_second->data)->coef;
+            cur_first = cur_first->next;
+            cur_second = cur_second->next;
+        }
+
+        result = list_insert(*poly_add, cur_add, (void *)&data);
+        if (SUCCESS != result)
+        {
+            print_error("failed to insert list!");
+            return result;
+        }
+
+        cur_add = cur_add->next;
+    }
+
+    if (NULL == cur_first)
+    {
+        cur_first = cur_second;
+    }
+
+    while (NULL != cur_first)
+    {
+        result = list_insert(*poly_add, cur_add, cur_first->data);
+        if (SUCCESS != result)
+        {
+            print_error("failed to insert list!");
+            return result;
+        }
+
+        cur_first = cur_first->next;
+        cur_add = cur_add->next;
+    }
+
+    carry_polynomials(*poly_add);
 
     return SUCCESS;
 }

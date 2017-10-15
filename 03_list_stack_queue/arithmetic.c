@@ -18,18 +18,11 @@ int add(char *first_operand, char *second_operand, char *answer)
     str_to_poly(first_operand, &first_poly);
     str_to_poly(second_operand, &second_poly);
 
-    result = add_polynomials(first_poly, second_poly, &add_poly);
+    result = add_polynomials_with_carry(first_poly, second_poly, &add_poly);
     if (SUCCESS != result)
     {
         print_error("failed to add polynomials!");
         return result;
-    }
-
-    /* 进位处理 */
-    result = carry_polynomials(add_poly);  
-    if (SUCCESS != result)
-    {
-        print_error("failed to carry polynomials!");
     }
 
     poly_to_str(answer, add_poly);
