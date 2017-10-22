@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "list.h"
+#include "clist.h"
 
 static int data_size = 0;
 static int data_is_equal(void *first, void *second);
@@ -49,41 +49,36 @@ int list_create(struct list** head, void *data)
 
 inline int list_is_empty(struct list *head)
 {
-    return ((head->next == NULL) ? TRUE : FALSE);
+    return ((NULL == head->next) ? TRUE : FALSE);
 }
 
 inline int list_is_last(struct list *head, struct list *cur)
 {
-    return ((cur->next == NULL) ? TRUE : FALSE);
+    return ((cur->next == head->next) ? TRUE : FALSE);
+}
+
+inline int list_is_first(struct list *head, struct list *cur)
+{
+    return ((cur == head->next) ? TRUE : FALSE);
 }
 
 /* return NULL if not found */
 struct list* list_find(struct list *head, void *data)
 {
-    struct list *cur = head;
+    struct list *cur = head->next;
 
-    while ((NULL != cur) && (!data_is_equal(cur->data, data)))
+    if (list_is_empty(head))
+    {
+        print_error("list is empty!");
+        return NULL;
+    }
+
+    while ((!list_is_last(head, cur)) && (!data_is_equal(cur->data, data)))
     {
         cur = cur->next;
     }
 
-    return cur;
-}
-
-struct list* list_find_recursively(struct list *head, void *data)
-{
-    if (NULL == head)
-    {
-        return NULL;
-    }
-    else if (data_is_equal(head->data, data))
-    {
-        return head;
-    }
-    else
-    {
-        return list_find_recursively(head->next, data);
-    }
+    return (data_is_equal(cur->data, data) ? cur : NULL);
 }
 
 /* return NULL if not found */
@@ -91,19 +86,25 @@ struct list* list_find_prev(struct list *head, void *data)
 {
     struct list *prev = head;
 
-    while ((NULL != prev->next) && (!data_is_equal(prev->next->data, data)))
+    if (list_is_empty(head))
+    {
+        print_error("list is empty!");
+        return NULL;
+    }
+
+    while ((!list_is_last(head, prev->next)) && (!data_is_equal(prev->next->data, data)))
     {
         prev = prev->next;
     }
 
-    return ((NULL == prev->next)? NULL : prev);
+    return (data_is_equal(prev->next->data, data)? prev : NULL);
 }
 
 int list_push_back(struct list *head, void *data)
 {
     int result;
     struct list *last = NULL;
-    struct list *cur = head;
+    struct list *cur = head->next;
 
     result = list_create(&last, data);
     if (SUCCESS != result)
@@ -112,12 +113,20 @@ int list_push_back(struct list *head, void *data)
         return result;
     }
 
-    while (NULL != cur->next)
+    if (list_is_empty(head))
+    {
+        head->next = last;
+        last->next = last;
+        return SUCCESS;
+    }
+
+    while (!list_is_last(head, cur))
     {
         cur = cur->next;
     }
 
     cur->next = last;
+    last->next = head->next;
 
     return SUCCESS;
 }
@@ -126,6 +135,7 @@ int list_push_front(struct list *head, void *data)
 {
     int result;
     struct list *first = NULL;
+    struct list *cur = head->next;
 
     result = list_create(&first, data);
     if (SUCCESS != result)
@@ -134,6 +144,19 @@ int list_push_front(struct list *head, void *data)
         return result;
     }
 
+    if (list_is_empty(head))
+    {
+        head->next = first;
+        first->next = first;
+        return SUCCESS;
+    }
+    
+    while (!list_is_last(head, cur))
+    {
+        cur = cur->next;
+    }
+
+    cur->next = first;
     first->next = head->next;
     head->next = first;
 
@@ -143,6 +166,7 @@ int list_push_front(struct list *head, void *data)
 int list_pop_back(struct list *head, void *data)
 {
     struct list *prev = head;
+    struct list *last = NULL;
 
     if (list_is_empty(head))
     {
@@ -150,16 +174,27 @@ int list_pop_back(struct list *head, void *data)
         return UNDERFLOW; 
     }
 
-    while (NULL != prev->next->next)
+    while (!list_is_last(head, prev->next))
     {
         prev = prev->next;
     }
     
-    memcpy(data, prev->next->data, data_size);
+    last = prev->next;
+    
+    if (list_is_last(head, head->next)) /* only one node in the list */
+    {
+        head->next = NULL;
+    }
+    else
+    {
+        prev->next = head->next;
+    }
 
-    free(prev->next->data);
-    free(prev->next);
-    prev->next = NULL;
+    memcpy(data, last->data, data_size);
+
+    free(last->data);
+    free(last);
+    last = NULL;
 
     return SUCCESS;
 }
@@ -174,7 +209,15 @@ int list_pop_front(struct list *head, void *data)
         return UNDERFLOW; 
     }
 
-    head->next = first->next;
+    if (list_is_last(head, first)) /* only one node in the list */
+    {
+        head->next = NULL;
+    }
+    else
+    {
+        head->next = first->next;
+    }
+
     memcpy(data, first->data, data_size);
 
     free(first->data);
@@ -196,30 +239,50 @@ int list_insert(struct list *head, struct list *prev, void *data)
         return result;
     }
 
-    cur->next = prev->next;
-    prev->next = cur;
+    if (list_is_empty(head))
+    {
+        cur->next = cur;
+        head->next = cur;
+    }
+    else
+    {
+        cur->next = prev->next;
+        prev->next = cur;
+    }
 
     return SUCCESS;
 }
 
-void list_del(struct list *head, void *data)
+void list_del(struct list *head, struct list *prev)
 {
-    struct list *prev;
-    struct list *cur;
+    struct list *cur = prev->next;
 
-    prev = list_find_prev(head, data);
-
-    if (NULL == prev)
+    if (cur->next == cur) /* only one node in the list */
     {
-        return;  /* not found */
+        head->next = NULL;
+    }
+    else if (list_is_first(head, cur))  /* delete first node in the list */
+    {
+        head->next = cur->next;
     }
 
-    cur = prev->next;
     prev->next = cur->next;
 
     free(cur->data);
     free(cur);
     cur = NULL;
+}
+
+void list_del_by_data(struct list *head, void *data)
+{
+    struct list *prev;
+
+    prev = list_find_prev(head, data);
+
+    if (NULL != prev)  
+    {
+        list_del(head, prev);
+    }
 }
 
 void list_clear(struct list *head)
@@ -233,7 +296,7 @@ void list_clear(struct list *head)
         return;
     }
 
-    while (NULL != head->next)
+    while (!list_is_empty(head))
     {
         list_pop_front(head, data);
     }
@@ -261,7 +324,7 @@ int list_copy(struct list **desc, struct list *src, int elem_size)
     cur_src = src->next;
     cur_desc = *desc;
     
-    while (NULL != cur_src)
+    while (!list_is_last(src, cur_src))
     {
         result = list_insert(*desc, cur_desc, cur_src->data);
         if (SUCCESS != result)
@@ -272,6 +335,13 @@ int list_copy(struct list **desc, struct list *src, int elem_size)
 
         cur_desc = cur_desc->next;
         cur_src = cur_src->next;
+    }
+
+    result = list_insert(*desc, cur_desc, cur_src->data);
+    if (SUCCESS != result)
+    {
+        print_error("failed to insert list!");
+        return result;
     }
 
     return SUCCESS;
@@ -303,6 +373,7 @@ int list_create_from_int_arr(struct list **head, int *arr, int num)
         }
 
         cur->next = node;
+        node->next = (*head)->next;
         cur = node;
     }
 
@@ -335,6 +406,7 @@ int list_create_from_poly_arr(struct list **head, void *arr, int num)
         }
 
         cur->next = node;
+        node->next = (*head)->next;
         cur = node;
     }
 
@@ -345,13 +417,13 @@ void list_print_int(struct list *head)
 {
     struct list *cur = head->next;
 
-    while (NULL != cur)
+    while (!list_is_last(head, cur))
     {
         printf("%d ", *(int *)cur->data);
         cur = cur->next;
     }
 
-    printf("\n");
+    printf("%d\n", *(int *)cur->data);
 }
 
 void list_print_poly(struct list *head)
@@ -359,51 +431,22 @@ void list_print_poly(struct list *head)
     struct list *cur = head->next;
     struct polynomial *data = NULL;
 
-    while (NULL != cur)
+    while (!list_is_last(head, cur))
     {
         data = (struct polynomial *)cur->data;
         printf("%dx^%d ", data->coef, data->expo);
         cur = cur->next;
 
-        if (NULL != cur)
+        if (head != cur)
         {
             printf("+ ");
         }
     }
 
-    printf("\n");
+    printf("%dx^%d\n", data->coef, data->expo);
 }
 
 static int data_is_equal(void *first, void *second)
 {
     return ((memcmp((void *)first, (void *)second, data_size) == 0)? TRUE : FALSE);
-}
-
-int list_reverse(struct list *head)
-{
-    int result = SUCCESS;
-    struct list *prev = head->next;
-    struct list *cur = NULL;   /* the node need to be deleted */
-
-    if ((NULL == prev) || (NULL == prev->next)) /* zero or one node in the list */
-    {
-        return SUCCESS;
-    }
-
-    cur = prev->next;
-
-    while (NULL != cur)
-    {
-        /* delete cur node */
-        prev->next = cur->next;
-
-        /* insert cur node to the front of the list */
-        cur->next = head->next;
-        head->next = cur;
-
-        /* move on */
-        cur = prev->next;
-    }
-
-    return SUCCESS;
 }

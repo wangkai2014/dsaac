@@ -2,9 +2,10 @@ CFLAGS = -g
 PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		03_swap_dlist_elements 04_intersect_list 05_union_list \
 		06_add_polynomials 07_multiply_polynomials 08_power_polynomials \
-		09_integer_arithmetic \
+		09_integer_arithmetic 10_josephus_problem 11_find_element \
+		12_reverse_list
 
-00_OBJ = 00_test_list.o list.o utils.o
+00_OBJ = 00_test_list.o clist.o utils.o
 01_OBJ = 01_print_list.o list.o utils.o
 02_OBJ = 02_print_lots.o list.o utils.o
 03_OBJ = 03_swap_list_elements.o list.o utils.o
@@ -15,6 +16,9 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 07_OBJ = 07_multiply_polynomials.o polynomial.o list.o utils.o
 08_OBJ = 08_power_polynomials.o polynomial.o list.o utils.o
 09_OBJ = 09_integer_arithmetic.o arithmetic.o polynomial.o list.o utils.o
+10_OBJ = 10_josephus_problem.o clist.o utils.o
+11_OBJ = 11_find_element.o list.o utils.o
+12_OBJ = 12_reverse_list.o list.o utils.o
 
 all: $(PROGS)
 
@@ -50,6 +54,15 @@ all: $(PROGS)
 
 09_integer_arithmetic: $(09_OBJ)
 	cc $(CFLAGS) -o $@ $(09_OBJ)
+
+10_josephus_problem: $(10_OBJ)
+	cc $(CFLAGS) -o $@ $(10_OBJ)
+
+11_find_element: $(11_OBJ)
+	cc $(CFLAGS) -o $@ $(11_OBJ)
+
+12_reverse_list: $(12_OBJ)
+	cc $(CFLAGS) -o $@ $(12_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o

@@ -1,5 +1,6 @@
 #include "utils.h"
-#include "list.h"
+//#include "list.h"
+#include "clist.h"
 
 static void print_list(struct list *head);
 
@@ -55,7 +56,7 @@ int main()
         result = list_pop_back(head, &data);
         if (SUCCESS != result)
         {
-            printf("err %d: failed to pop back the lsit.\n", result);
+            printf("err %d: failed to pop back the list.\n", result);
             return 0;
         }
         else
@@ -105,7 +106,8 @@ static void print_list(struct list *head)
 {
     struct list *cur = head->next;
 
-    while (NULL != cur)
+    /* while (NULL != cur) */
+    while ((NULL != cur) && (head->next != cur->next))
     {
         printf("%d ", *(int *)cur->data);
         cur = cur->next;
