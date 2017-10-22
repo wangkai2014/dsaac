@@ -28,6 +28,12 @@ struct polynomial
     int expo;  /* exponent */
 };
 
+struct student
+{
+    int id;
+    int secu_num;  /* social security number */
+};
+
 void print_error(char *msg);
 
 #endif

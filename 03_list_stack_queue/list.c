@@ -341,6 +341,38 @@ int list_create_from_poly_arr(struct list **head, void *arr, int num)
     return SUCCESS;
 }
 
+int list_create_from_student_arr(struct list **head, void *arr, int num)
+{
+    int pos;
+    int result;
+    struct list *node = NULL;
+    struct list *cur = NULL;
+
+    result = list_init(head, sizeof(struct student));
+    if (SUCCESS != result)
+    {
+        print_error("failed to initialize list!");
+        return result;
+    }
+
+    cur = *head;
+
+    for (pos = 0; pos < num; pos++)
+    {
+        result = list_create(&node, (struct student*)arr + pos);
+        if (SUCCESS != result)
+        {
+            print_error("failed to create list!");
+            return result;
+        }
+
+        cur->next = node;
+        cur = node;
+    }
+
+    return SUCCESS;
+}
+
 void list_print_int(struct list *head)
 {
     struct list *cur = head->next;
@@ -394,14 +426,9 @@ int list_reverse(struct list *head)
 
     while (NULL != cur)
     {
-        /* delete cur node */
-        prev->next = cur->next;
-
-        /* insert cur node to the front of the list */
-        cur->next = head->next;
+        prev->next = cur->next;   /* delete cur node */
+        cur->next = head->next;   /* insert cur node to the front of the list */
         head->next = cur;
-
-        /* move on */
         cur = prev->next;
     }
 
