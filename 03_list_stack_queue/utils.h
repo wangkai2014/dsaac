@@ -20,6 +20,7 @@ enum err_code
     MALLOC_FAIL  = 4,
     NUL_PTR = 5,
     OUT_OF_RANGE = 6,
+    INVALID_INPUT = 7,
 };
 
 struct polynomial
