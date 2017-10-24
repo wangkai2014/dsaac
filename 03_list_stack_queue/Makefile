@@ -4,8 +4,10 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		06_add_polynomials 07_multiply_polynomials 08_power_polynomials \
 		09_integer_arithmetic 10_josephus_problem 11_find_element \
 		12_reverse_list 13_sort_student_records 14_store_graph_with_list \
+		00_test_cursor 14_store_graph_with_cursor \
 
 00_OBJ = 00_test_list.o clist.o utils.o
+00_COBJ = 00_test_cursor.o cursor.o utils.o
 01_OBJ = 01_print_list.o list.o utils.o
 02_OBJ = 02_print_lots.o list.o utils.o
 03_OBJ = 03_swap_list_elements.o list.o utils.o
@@ -21,11 +23,15 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 12_OBJ = 12_reverse_list.o list.o utils.o
 13_OBJ = 13_sort_student_records.o list.o utils.o
 14_OBJ = 14_store_graph_with_list.o list.o utils.o
+14_DOBJ = 14_store_graph_with_cursor.o cursor.o utils.o
 
 all: $(PROGS)
 
 00_test_list: $(00_OBJ)
 	cc $(CFLAGS) -o $@ $(00_OBJ)
+
+00_test_cursor: $(00_COBJ)
+	cc $(CFLAGS) -o $@ $(00_COBJ)
 
 01_print_list: $(01_OBJ)
 	cc $(CFLAGS) -o $@ $(01_OBJ)
@@ -71,6 +77,9 @@ all: $(PROGS)
 
 14_store_graph_with_list: $(14_OBJ)
 	cc $(CFLAGS) -o $@ $(14_OBJ)
+
+14_store_graph_with_cursor: $(14_DOBJ)
+	cc $(CFLAGS) -o $@ $(14_DOBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
