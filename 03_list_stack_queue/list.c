@@ -2,7 +2,6 @@
 #include "list.h"
 
 static int data_size = 0;
-static int data_is_equal(void *first, void *second);
 
 int list_init(struct list** head, int elem_size)
 {
@@ -406,7 +405,7 @@ void list_print_poly(struct list *head)
     printf("\n");
 }
 
-static int data_is_equal(void *first, void *second)
+int data_is_equal(void *first, void *second)
 {
     return ((memcmp((void *)first, (void *)second, data_size) == 0)? TRUE : FALSE);
 }
