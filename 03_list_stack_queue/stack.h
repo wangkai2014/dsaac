@@ -14,5 +14,6 @@ int stack_is_empty(stack stck);
 int stack_push(stack stck, void *data);
 int stack_pop(stack stck, void *data);
 int stack_top(stack stck, void *data);
+void stack_clear(stack stck);
 
 #endif

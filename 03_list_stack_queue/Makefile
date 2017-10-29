@@ -7,6 +7,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		00_test_cursor 14_store_graph_with_cursor 15_self_adjust_list_use_array \
 		15_self_adjust_list_use_linked 16_list_unique 16_list_unique_with_sort \
 		17_lazy_deletion_list 00_test_stack 18_balance_symbols \
+		19_postfix_expression \
 
 00_OBJ = 00_test_list.o clist.o utils.o
 00_COBJ = 00_test_cursor.o cursor.o utils.o
@@ -33,6 +34,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 16_SOBJ = 16_list_unique_with_sort.o list.o utils.o
 17_OBJ = 17_lazy_deletion_list.o lazy_list.o utils.o
 18_OBJ = 18_balance_symbols.o stack.o utils.o
+19_OBJ = 19_postfix_expression.o stack.o utils.o
 
 all: $(PROGS)
 
@@ -110,6 +112,9 @@ all: $(PROGS)
 
 18_balance_symbols: $(18_OBJ)
 	cc $(CFLAGS) -o $@ $(18_OBJ)
+
+19_postfix_expression: $(19_OBJ)
+	cc $(CFLAGS) -o $@ $(19_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o

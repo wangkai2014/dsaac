@@ -111,3 +111,21 @@ int stack_top(stack stck, void *data)
 
     return SUCCESS;
 }
+
+void stack_clear(stack stck)
+{
+    stack cur = stck->next;
+    
+    while (NULL != cur)
+    {
+        stck->next = cur->next;
+        free(cur->data);
+        free(cur);
+
+        cur = stck->next;
+    }
+
+    free(stck->data);
+    free(stck);
+    data_size = 0;
+}
