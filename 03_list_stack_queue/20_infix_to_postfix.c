@@ -38,6 +38,7 @@ int main()
 
         printf("Continue?('y' or 'n'): ");
         scanf(" %c", &go_on);
+        getchar();  /* consume the Enter key */
     }
 
     return 0;
@@ -46,13 +47,13 @@ int main()
 void set_prio()
 {
     /* smaller number means lower priority */
-    prio['('] = 0;
-    prio[')'] = 1;
     prio['+'] = 2;
     prio['-'] = 2;
     prio['*'] = 3;
     prio['/'] = 3;
     prio['^'] = 4;
+    prio['('] = 5;
+    prio[')'] = 5;
 }
 
 void get_line(char *str)
@@ -122,7 +123,7 @@ int read_symbol(char *str, int *pos, char *operand, char *operator)
     if (is_operator(str[cur_pos]))
     {
         *operator = str[cur_pos];
-        *pos = cur_pos + 1;
+        *pos = cur_pos + 2;
         return SUCCESS;
     }
     else
@@ -152,21 +153,7 @@ int proc_operator(stack stck, char in_oper, char *post_expr, int *expr_pos)
 {
     int pos = *expr_pos;
     int result = SUCCESS;
-    char last_oper = 0;
-
-    if (stack_is_empty(stck))
-    {
-        result = stack_push(stck, &in_oper);
-        return result;
-    }
-
-    stack_top(stck, &last_oper);
-
-    if (last_oper == '(')
-    {
-        result = stack_push(stck, &in_oper);
-        return result;
-    }
+    char last_oper = 0x7F;
 
     if (in_oper == ')')
     {
@@ -174,19 +161,15 @@ int proc_operator(stack stck, char in_oper, char *post_expr, int *expr_pos)
         return result;
     }
 
-    while ((!stack_is_empty(stck)) && (cmp_priority(in_oper, last_oper) <= 0))
+    while ((!stack_is_empty(stck)) && 
+            (stack_top(stck, &last_oper) == SUCCESS) &&
+            (last_oper != '(') &&
+            (cmp_priority(in_oper, last_oper) <= 0))
     {
-        result = stack_pop(stck, &last_oper);
-        if (SUCCESS != result)
-        {
-            printf("failed to pop the last operator from the stack!\n");
-            return result;
-        }
+        stack_pop(stck, &last_oper);
 
         post_expr[pos++] = last_oper;
         post_expr[pos++] = ' ';
-
-        stack_top(stck, &last_oper);
     }
 
     *expr_pos = pos;
@@ -204,27 +187,15 @@ int proc_closed_bracket(stack stck, char *post_expr, int *expr_pos)
 
     stack_top(stck, &oper);
 
-    while ((!stack_is_empty(stck)) && (oper != '('))
+    while ((!stack_is_empty(stck)) &&
+            (stack_pop(stck, &oper) == SUCCESS) &&
+            (oper != '('))
     {
-        result = stack_pop(stck, &oper);
-        if (SUCCESS != result)
-        {
-            printf("failed to pop the last operator from the stack!\n");
-            return result;
-        }
-
         post_expr[pos++] = oper;
         post_expr[pos++] = ' ';
-
-        stack_top(stck, &oper);
     }
     
     *expr_pos = pos;
-
-    if (!stack_is_empty(stck))
-    {
-        result = stack_pop(stck, &oper);
-    }
 
     return result;
 }
