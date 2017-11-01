@@ -5,7 +5,7 @@
 #define MAX_DIGIT_LEN 10
 
 char prio[128] = {0};
-char oper[] = {'+', '-', '*', '/', '(', ')'};
+char oper[] = {'+', '-', '*', '/', '^', '(', ')'};
 
 void set_prio();
 void get_line(char *str);
@@ -157,7 +157,15 @@ int proc_operator(stack stck, char in_oper, char *post_expr, int *expr_pos)
 
     if (in_oper == ')')
     {
-        proc_closed_bracket(stck, post_expr, expr_pos);
+        result = proc_closed_bracket(stck, post_expr, expr_pos);
+        return result;
+    }
+
+    if ((!stack_is_empty(stck)) &&
+        (stack_top(stck, &last_oper) == SUCCESS) &&
+        (last_oper == '^') && (in_oper == '^'))
+    {
+        result = stack_push(stck, &in_oper);
         return result;
     }
 
