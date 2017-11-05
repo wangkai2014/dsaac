@@ -21,6 +21,7 @@ enum err_code
     NUL_PTR = 5,
     OUT_OF_RANGE = 6,
     INVALID_INPUT = 7,
+    NOT_FOUND = 8,
 };
 
 struct polynomial

@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "stack.h"
 
-int data_size = 0;
+int stack_data_size = 0;
 
 static int stack_create(stack *in_stck, void *data)
 {
@@ -15,14 +15,14 @@ static int stack_create(stack *in_stck, void *data)
         return MALLOC_FAIL;
     }
 
-    stck->data = malloc(data_size);
+    stck->data = malloc(stack_data_size);
     if (NULL == stck->data)
     {
         printf("failed to malloc memory for stack's data!\n");
         return MALLOC_FAIL;
     }
 
-    memcpy(stck->data, data, data_size);
+    memcpy(stck->data, data, stack_data_size);
     stck->next = NULL;
 
     *in_stck = stck;
@@ -35,7 +35,7 @@ int stack_init(stack *in_stck, int elem_size)
     int result = SUCCESS;
     void *data = NULL;
 
-    data_size = elem_size;
+    stack_data_size = elem_size;
 
     data = malloc(elem_size);
     if (NULL == data)
@@ -90,7 +90,7 @@ int stack_pop(stack stck, void *data)
     }
 
     stck->next = first->next;
-    memcpy(data, first->data, data_size);
+    memcpy(data, first->data, stack_data_size);
 
     free(first->data);
     free(first);
@@ -107,7 +107,7 @@ int stack_top(stack stck, void *data)
         return UNDERFLOW;
     }
 
-    memcpy(data, stck->next->data, data_size);
+    memcpy(data, stck->next->data, stack_data_size);
 
     return SUCCESS;
 }
@@ -127,5 +127,5 @@ void stack_clear(stack stck)
 
     free(stck->data);
     free(stck);
-    data_size = 0;
+    stack_data_size = 0;
 }
