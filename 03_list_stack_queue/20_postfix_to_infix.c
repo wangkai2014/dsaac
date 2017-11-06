@@ -146,7 +146,7 @@ int insert_operand_to_infix_list(struct list *head, char *operand)
     int result = SUCCESS;
     struct list *last = list_last(head);
 
-    if (isdigit(*(char *)(last->data)))
+    if ((isdigit(*(char *)(last->data))) || (')' == (*(char *)(last->data))))
     {
         result = list_push_back(head, empty_symbol);
         if (SUCCESS != result)
@@ -333,8 +333,6 @@ int skip_left_bracket(struct list *head, struct list **expr)
         cur = cur->prev;
     }
 
-    *expr = cur->prev;
-
     return result;
 }
 
@@ -385,8 +383,6 @@ int skip_right_bracket(struct list *head, struct list **expr)
 
         cur = cur->next;
     }
-
-    *expr = cur->next;
 
     return result;
 }
