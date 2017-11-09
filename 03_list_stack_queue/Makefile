@@ -8,7 +8,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		15_self_adjust_list_use_linked 16_list_unique 16_list_unique_with_sort \
 		17_lazy_deletion_list 00_test_stack 18_balance_symbols \
 		19_postfix_expression 20_infix_to_postfix 20_postfix_to_infix \
-		21_two_stack_in_one_array \
+		21_two_stack_in_one_array 22_min_stack \
 
 00_OBJ = 00_test_list.o clist.o utils.o
 00_COBJ = 00_test_cursor.o cursor.o utils.o
@@ -39,6 +39,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 20_OBJ = 20_infix_to_postfix.o stack.o utils.o
 20_POBJ = 20_postfix_to_infix.o dlist.o stack.o utils.o
 21_OBJ = 21_two_stack_in_one_array.o two_stack.o utils.o
+22_OBJ = 22_min_stack.o min_stack.o utils.o
 
 all: $(PROGS)
 
@@ -128,6 +129,9 @@ all: $(PROGS)
 
 21_two_stack_in_one_array: $(21_OBJ)
 	cc $(CFLAGS) -o $@ $(21_OBJ)
+
+22_min_stack: $(22_OBJ)
+	cc $(CFLAGS) -o $@ $(22_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
