@@ -9,7 +9,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 		17_lazy_deletion_list 00_test_stack 18_balance_symbols \
 		19_postfix_expression 20_infix_to_postfix 20_postfix_to_infix \
 		21_two_stack_in_one_array 22_min_stack 23_three_stack_in_one_array \
-		25_queue_in_array \
+		25_queue_in_array 25_queue_in_list \
 
 00_OBJ = 00_test_list.o clist.o utils.o
 00_COBJ = 00_test_cursor.o cursor.o utils.o
@@ -43,6 +43,7 @@ PROGS = 00_test_list 01_print_list 02_print_lots 03_swap_list_elements \
 22_OBJ = 22_min_stack.o min_stack.o utils.o
 23_OBJ = 23_three_stack_in_one_array.o three_stack.o utils.o
 25_AOBJ = 25_queue_in_array.o aqueue.o utils.o
+25_LOBJ = 25_queue_in_list.o lqueue.o dlist.o utils.o
 
 all: $(PROGS)
 
@@ -141,6 +142,9 @@ all: $(PROGS)
 
 25_queue_in_array: $(25_AOBJ)
 	cc $(CFLAGS) -o $@ $(25_AOBJ)
+
+25_queue_in_list: $(25_LOBJ)
+	cc $(CFLAGS) -o $@ $(25_LOBJ)
 
 clean:
 	rm -rf $(PROGS) *.o

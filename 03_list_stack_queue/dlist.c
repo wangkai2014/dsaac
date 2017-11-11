@@ -28,7 +28,6 @@ int list_init(struct list** head, int elem_size)
         return result;
     }
 
-    tail = (*head)->next;
     result = list_create(&tail, data);
     if (SUCCESS != result)
     {
@@ -36,9 +35,10 @@ int list_init(struct list** head, int elem_size)
         return result;
     }
 
-    (*head)->prev = tail;
     tail->prev = (*head);
     tail->next = (*head);
+    (*head)->next = tail;
+    (*head)->prev = tail;
 
     return SUCCESS;
 }
@@ -280,6 +280,12 @@ void list_clear(struct list *head)
     {
         list_pop_front(head, data);
     }
+
+    free(head->next->data);
+    free(head->next);
+    free(head->data);
+    free(head);
+    head = NULL;
 }
 
 int list_copy(struct list **desc, struct list *src, int elem_size)
