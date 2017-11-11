@@ -147,9 +147,12 @@ void test_stack_push(stack stck)
         if (SUCCESS != result)
         {
             printf("failed to push %d to stack %d!\n", arr[pos], stck_id);
+            free(arr);
             return;
         }
     }
+
+    free(arr);
 
     printf("push stack successfully.\n");
 }
