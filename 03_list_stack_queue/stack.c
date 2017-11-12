@@ -8,7 +8,7 @@ static int stack_create(stack *in_stck, void *data)
     int result = 0;
     stack stck = NULL;
 
-    stck = (stack)malloc(sizeof(stack));
+    stck = (stack)malloc(sizeof(*stck));
     if (NULL == stck)
     {
         printf("failed to malloc memory for stack!\n");

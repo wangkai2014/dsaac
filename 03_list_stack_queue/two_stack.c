@@ -11,7 +11,7 @@ int stack_init(stack *in_stck, int size)
         return INVALID_INPUT;
     }
 
-    stck = (stack)malloc(sizeof(stack));
+    stck = (stack)malloc(sizeof(*stck));
     if (NULL == stck)
     {
         printf("Failed to malloc memory for stack!\n");
@@ -168,21 +168,21 @@ int stack_print(stack stck, int stck_id)
     return SUCCESS;
 }
 
-int stack_clear(stack stck)
+int stack_clear(stack *stck)
 {
-    if (NULL == stck)
+    if ((NULL == stck) || (NULL == *stck))
     {
         printf("null pointer!\n");
         return NUL_PTR;
     }
 
-    free(stck->arr);
-    free(stck);
-    stck->arr = 0;
-    stck->first_num = 0;
-    stck->second_num = 0;
+    if (NULL != (*stck)->arr)
+    {
+        free((*stck)->arr);
+    }
 
-    return SUCCESS;
+    free(*stck);
+    *stck = NULL;
 
     return SUCCESS;
 }

@@ -50,7 +50,7 @@ int main()
         scanf(" %c", &go_on);
     }
 
-    stack_clear(stck);
+    stack_clear(&stck);
 
     return 0;
 }
@@ -79,7 +79,7 @@ void operate_stack(stack *stck, int stck_id, int operation)
 
         case OPER_CLEAR:
         {
-            stack_clear(*stck);
+            stack_clear(stck);
             break;
         }
 

@@ -18,5 +18,5 @@ int stack_push(stack stck, int stck_id, int elem);
 int stack_pop(stack stck, int stck_id, int *elem);
 int stack_top(stack stck, int stck_id, int *elem);
 int stack_print(stack stck, int stck_id);
-int stack_clear(stack stck);
+int stack_clear(stack *stck);
 #endif
