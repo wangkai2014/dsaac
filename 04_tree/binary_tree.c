@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "expr.h"
 #include "binary_tree.h"
 
 int tree_init(Tree **in_tree, int data_size)
@@ -84,40 +85,4 @@ int tree_clear(Tree **tree)
     int result = SUCCESS;
 
     return result;
-}
-
-void tree_preorder_visit(Tree *tree, Visit visit, char *str, int *start)
-{
-    if ((NULL == tree) || (NULL == visit))
-    {
-        return;
-    }
-
-    (*visit)(tree, str, start);
-    tree_preorder_visit(tree->left, visit, str, start);
-    tree_preorder_visit(tree->right, visit, str, start);
-}
-
-void tree_inorder_visit(Tree *tree, Visit visit, char *str, int *start)
-{
-    if ((NULL == tree) || (NULL == visit))
-    {
-        return;
-    }
-
-    tree_inorder_visit(tree->left, visit, str, start);
-    (*visit)(tree, str, start);
-    tree_inorder_visit(tree->right, visit, str, start);
-}
-
-void tree_postorder_visit(Tree *tree, Visit visit, char *str, int *start)
-{
-    if ((NULL == tree) || (NULL == visit))
-    {
-        return;
-    }
-
-    tree_postorder_visit(tree->left, visit, str, start);
-    tree_postorder_visit(tree->right, visit, str, start);
-    (*visit)(tree, str, start);
 }
