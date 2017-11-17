@@ -5,19 +5,19 @@
 
 typedef void (*Visit)(Tree *, char *, int *);
 
-char priority[128] = {0};
-char oper[] = {'+', '-', '*', '/', '^', '(', ')'};
+char g_priority[128] = {0};
+char g_operator[] = {'+', '-', '*', '/', '^', '(', ')'};
 
 void set_priority()
 {
-    /* smaller number means lower priorityrity */
-    priority['+'] = 2;
-    priority['-'] = 2;
-    priority['*'] = 3;
-    priority['/'] = 3;
-    priority['^'] = 4;
-    priority['('] = 5;
-    priority[')'] = 5;
+    /* smaller number means lower g_priorityrity */
+    g_priority['+'] = 2;
+    g_priority['-'] = 2;
+    g_priority['*'] = 3;
+    g_priority['/'] = 3;
+    g_priority['^'] = 4;
+    g_priority['('] = 5;
+    g_priority[')'] = 5;
 }
 
 void get_line(char *str)
@@ -71,12 +71,12 @@ int read_symbol(char *symbol, char *str, int *pos)
 
 int is_operator(char ch)
 {
-    int num = sizeof(oper) / sizeof(char);
+    int num = sizeof(g_operator) / sizeof(char);
     int pos;
 
     for (pos = 0; pos < num; pos++)
     {
-        if (ch == oper[pos])
+        if (ch == g_operator[pos])
         {
             return TRUE;
         }
@@ -87,11 +87,11 @@ int is_operator(char ch)
 
 int cmp_priority(char first, char second)
 {
-    if (priority[first] < priority[second])
+    if (g_priority[first] < g_priority[second])
     {
         return -1;
     }
-    else if (priority[first] > priority[second])
+    else if (g_priority[first] > g_priority[second])
     {
         return 1;
     }
@@ -108,9 +108,186 @@ static int preorder_expr_to_tree(Tree **tree, char *expr)
     return result;
 }
 
+static int proc_bracket_of_inorder_expr(Stack *expr_stck, Stack *oper_stck)
+{
+    int result = SUCCESS;
+    char top_oper[SYMBOL_LEN];
+    Tree *tree = NULL;
+    Tree *left = NULL;
+    Tree *right = NULL;
+
+    while ((!stack_is_empty(oper_stck)) &&
+           (SUCCESS == stack_top(oper_stck, top_oper, sizeof(char))) &&
+           ('(' != top_oper[0]))
+    {
+        result = stack_pop(oper_stck, top_oper, sizeof(char));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to pop oper_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = stack_pop(expr_stck, &right, sizeof(Tree *));
+        result = stack_pop(expr_stck, &left, sizeof(Tree *));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = tree_create(&tree, left, right, top_oper, SYMBOL_LEN);
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to init tree!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = stack_push(expr_stck, &tree, sizeof(Tree *));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to push expr_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+    }
+
+    result = stack_pop(oper_stck, top_oper, SYMBOL_LEN);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to pop oper_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    return result;
+}
+
+static int proc_operator_of_inorder_expr(Stack *expr_stck, Stack *oper_stck, char oper)
+{
+    int result = SUCCESS;
+    char top_oper[SYMBOL_LEN];
+    Tree *tree = NULL;
+    Tree *left = NULL;
+    Tree *right = NULL;
+
+    while ((!stack_is_empty(oper_stck)) &&
+           (SUCCESS == stack_top(oper_stck, top_oper, sizeof(char))) &&
+           (cmp_priority(top_oper[0], oper) >= 0))
+    {
+        result = stack_pop(oper_stck, top_oper, sizeof(char));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to pop oper_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = stack_pop(expr_stck, &right, sizeof(Tree *));
+        result = stack_pop(expr_stck, &left, sizeof(Tree *));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = tree_create(&tree, left, right, top_oper, SYMBOL_LEN);
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to init tree!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+
+        result = stack_push(expr_stck, &tree, sizeof(Tree *));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to push expr_stck!\n", __FUNCTION__, __LINE__);
+            return result;
+        }
+    }
+
+    memset(top_oper, 0, SYMBOL_LEN);
+    top_oper[0] = oper;
+
+    result = stack_push(oper_stck, top_oper, SYMBOL_LEN);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to push oper_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    return result;
+}
+
+static int proc_operand_of_inorder_expr(Stack *expr_stck, char *symbol)
+{
+    int result = SUCCESS;
+    Tree *tree = NULL;
+
+    result = tree_create(&tree, NULL, NULL, symbol, SYMBOL_LEN);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to create tree!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    result = stack_push(expr_stck, &tree, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to push expr_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    return result;
+}
+
 static int inorder_expr_to_tree(Tree **tree, char *expr)
 {
     int result = SUCCESS;
+    int start = 0;
+    char symbol[SYMBOL_LEN];
+    Stack *expr_stck = NULL;  /* stack of expression trees */
+    Stack *oper_stck = NULL;  /* stack of operator trees */
+
+    result = stack_init(&expr_stck, sizeof(Tree *));
+    result |= stack_init(&oper_stck, sizeof(char));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to init stack!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    while (SUCCESS == read_symbol(symbol, expr, &start))
+    {
+        if (')' == symbol[0])
+        {
+            result = proc_bracket_of_inorder_expr(expr_stck, oper_stck);
+        }
+        else if (is_operator(symbol[0]))
+        {
+            result = proc_operator_of_inorder_expr(expr_stck, oper_stck, symbol[0]);
+        }
+        else
+        {
+            result = proc_operand_of_inorder_expr(expr_stck, symbol);
+        }
+
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to proc symbol %s! result=%d!\n", __FUNCTION__, __LINE__, symbol, result);
+            return result;
+        }
+    }
+
+    /* use brank character to pop all the operators on the oper_stck */
+    result = proc_operator_of_inorder_expr(expr_stck, oper_stck, ' ');
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to proc operator ^!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    result = stack_pop(expr_stck, tree, sizeof(Tree*));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    stack_clear(&expr_stck);
+    stack_clear(&oper_stck);
 
     return result;
 }
@@ -196,7 +373,9 @@ static void preorder_visit_expr_tree(Tree *tree, Visit visit, char *str, int *st
     }
 
     (*visit)(tree, str, start);
+
     preorder_visit_expr_tree(tree->left, visit, str, start);
+
     preorder_visit_expr_tree(tree->right, visit, str, start);
 }
 
@@ -253,7 +432,9 @@ static void postorder_visit_expr_tree(Tree *tree, Visit visit, char *str, int *s
     }
 
     postorder_visit_expr_tree(tree->left, visit, str, start);
+
     postorder_visit_expr_tree(tree->right, visit, str, start);
+
     (*visit)(tree, str, start);
 }
 
