@@ -33,6 +33,30 @@ void get_line(char *str)
     str[pos] = '\0';
 }
 
+int reverse_str(char *str)
+{
+    int len = strlen(str);
+    int pos = 0;
+    char *buf = NULL;
+
+    buf = (char *)malloc(sizeof(char) * (len + 1));
+    if (NULL == buf)
+    {
+        printf("%s(%d): failed to malloc memory for buf!\n", __FUNCTION__, __LINE__);
+        return MALLOC_FAIL;
+    }
+
+    memcpy(buf, str, len);
+    buf[len] = 0;
+
+    for (pos = 0; pos < len; pos++)
+    {
+        str[pos] = buf[len - 1 - pos];
+    }
+
+    return SUCCESS;
+}
+
 int read_symbol(char *symbol, char *str, int *pos)
 {
     int start_pos = *pos;
@@ -101,9 +125,100 @@ int cmp_priority(char first, char second)
     }
 }
 
+static int proc_operator_of_preorder_expr(Stack *expr_stck, char *oper)
+{
+    int result = SUCCESS;
+    Tree *tree = NULL;
+    Tree *left = NULL;
+    Tree *right = NULL;
+
+    result = stack_pop(expr_stck, &left, sizeof(Tree *));
+    result |= stack_pop(expr_stck, &right, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    result = tree_create(&tree, left, right, oper, SYMBOL_LEN);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to create tree!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    result = stack_push(expr_stck, &tree, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to push expr_stck!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    return result;
+}
+
+static int proc_operand_of_preorder_expr(Stack *expr_stck, char *symbol)
+{
+    int result = SUCCESS;
+    Tree *tree = NULL;
+
+    result = tree_create(&tree, NULL, NULL, symbol, SYMBOL_LEN);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to create tree!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    result = stack_push(expr_stck, &tree, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to push expr_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    return result;
+}
+
 static int preorder_expr_to_tree(Tree **tree, char *expr)
 {
     int result = SUCCESS;
+    int start = 0;
+    char symbol[SYMBOL_LEN];
+    Stack *expr_stck = NULL;  /* stack of expression trees */
+
+    reverse_str(expr);
+
+    result = stack_init(&expr_stck, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to init stack!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    while (SUCCESS == read_symbol(symbol, expr, &start))
+    {
+        if (is_operator(symbol[0]))
+        {
+            result = proc_operator_of_preorder_expr(expr_stck, symbol);
+        }
+        else
+        {
+            result = proc_operand_of_preorder_expr(expr_stck, symbol);
+        }
+
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to proc symbol %s! result=%d!\n", __FUNCTION__, __LINE__, symbol, result);
+            return result;
+        }
+    }
+
+    result = stack_pop(expr_stck, tree, sizeof(Tree*));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
+    }
+
+    stack_clear(&expr_stck);
 
     return result;
 }
@@ -128,7 +243,7 @@ static int proc_bracket_of_inorder_expr(Stack *expr_stck, Stack *oper_stck)
         }
 
         result = stack_pop(expr_stck, &right, sizeof(Tree *));
-        result = stack_pop(expr_stck, &left, sizeof(Tree *));
+        result |= stack_pop(expr_stck, &left, sizeof(Tree *));
         if (SUCCESS != result)
         {
             printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
@@ -138,7 +253,7 @@ static int proc_bracket_of_inorder_expr(Stack *expr_stck, Stack *oper_stck)
         result = tree_create(&tree, left, right, top_oper, SYMBOL_LEN);
         if (SUCCESS != result)
         {
-            printf("%s(%d): failed to init tree!\n", __FUNCTION__, __LINE__);
+            printf("%s(%d): failed to create tree!\n", __FUNCTION__, __LINE__);
             return result;
         }
 
@@ -180,7 +295,7 @@ static int proc_operator_of_inorder_expr(Stack *expr_stck, Stack *oper_stck, cha
         }
 
         result = stack_pop(expr_stck, &right, sizeof(Tree *));
-        result = stack_pop(expr_stck, &left, sizeof(Tree *));
+        result |= stack_pop(expr_stck, &left, sizeof(Tree *));
         if (SUCCESS != result)
         {
             printf("%s(%d): failed to pop expr_stck!\n", __FUNCTION__, __LINE__);
@@ -190,7 +305,7 @@ static int proc_operator_of_inorder_expr(Stack *expr_stck, Stack *oper_stck, cha
         result = tree_create(&tree, left, right, top_oper, SYMBOL_LEN);
         if (SUCCESS != result)
         {
-            printf("%s(%d): failed to init tree!\n", __FUNCTION__, __LINE__);
+            printf("%s(%d): failed to create tree!\n", __FUNCTION__, __LINE__);
             return result;
         }
 
