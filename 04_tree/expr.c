@@ -111,7 +111,7 @@ static int preorder_expr_to_tree(Tree **tree, char *expr)
 static int proc_bracket_of_inorder_expr(Stack *expr_stck, Stack *oper_stck)
 {
     int result = SUCCESS;
-    char top_oper[SYMBOL_LEN];
+    char top_oper[SYMBOL_LEN] = {0};
     Tree *tree = NULL;
     Tree *left = NULL;
     Tree *right = NULL;
@@ -162,13 +162,14 @@ static int proc_bracket_of_inorder_expr(Stack *expr_stck, Stack *oper_stck)
 static int proc_operator_of_inorder_expr(Stack *expr_stck, Stack *oper_stck, char oper)
 {
     int result = SUCCESS;
-    char top_oper[SYMBOL_LEN];
+    char top_oper[SYMBOL_LEN] = {0};
     Tree *tree = NULL;
     Tree *left = NULL;
     Tree *right = NULL;
 
     while ((!stack_is_empty(oper_stck)) &&
            (SUCCESS == stack_top(oper_stck, top_oper, sizeof(char))) &&
+           ('(' != top_oper[0]) &&
            (cmp_priority(top_oper[0], oper) >= 0))
     {
         result = stack_pop(oper_stck, top_oper, sizeof(char));
@@ -201,10 +202,7 @@ static int proc_operator_of_inorder_expr(Stack *expr_stck, Stack *oper_stck, cha
         }
     }
 
-    memset(top_oper, 0, SYMBOL_LEN);
-    top_oper[0] = oper;
-
-    result = stack_push(oper_stck, top_oper, SYMBOL_LEN);
+    result = stack_push(oper_stck, &oper, sizeof(char));
     if (SUCCESS != result)
     {
         printf("%s(%d): failed to push oper_stck!\n", __FUNCTION__, __LINE__);
