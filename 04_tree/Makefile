@@ -2,7 +2,7 @@ CFLAGS = -g
 PROGS  = 00_test_stack 00_transform_expr_order \
 
 00_SOBJ = 00_test_stack.o stack.o utils.o
-00_TOBJ = 00_transform_expr_order.o expr.o stack.o binary_tree.o utils.o
+00_TOBJ = 00_transform_expr_order.o expr.o stack.o bstree.o utils.o
 
 all: $(PROGS)
 

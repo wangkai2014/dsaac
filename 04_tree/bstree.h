@@ -1,5 +1,5 @@
-#ifndef __BINARY_TREE_H__
-#define __BINARY_TREE_H__
+#ifndef __BSTREE_H__
+#define __BSTREE_H__
 
 typedef struct Tree Tree;
 

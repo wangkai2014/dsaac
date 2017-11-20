@@ -1,6 +1,6 @@
 #include "utils.h"
 #include "stack.h"
-#include "binary_tree.h"
+#include "bstree.h"
 #include "expr.h"
 
 typedef void (*Visit)(Tree *, char *, int *);

@@ -1,6 +1,6 @@
 #include "utils.h"
 #include "expr.h"
-#include "binary_tree.h"
+#include "bstree.h"
 
 int tree_init(Tree **in_tree, int data_size)
 {
