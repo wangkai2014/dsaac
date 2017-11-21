@@ -20,8 +20,11 @@ int tree_insert(Tree **tree, void *data, int data_size);
 int tree_delete(Tree **tree, void *data, int data_size);
 void tree_clear(Tree **tree);
 int tree_find(Tree *tree, Tree **target, void *data, int data_size);
-int tree_find_parent(Tree *tree, Tree **parent, int *dir, void *data, int data_size);
 int tree_find_min(Tree *tree, Tree **target);
 int tree_find_max(Tree *tree, Tree **target);
+
+void tree_inorder_print_int(Tree *tree);
+void tree_preorder_print_int(Tree *tree);
+void tree_postorder_print_int(Tree *tree);
 
 #endif

@@ -22,7 +22,7 @@ enum err_code
     OUT_OF_RANGE = 6,
     INVALID_INPUT = 7,
     NOT_FOUND = 8,
-    DUPLI_DATA = 9,
+    DUPLICATED = 9,
 };
 
 struct polynomial

@@ -671,14 +671,6 @@ int transform_expr_order(char *dest_expr, int dest_order, char *src_expr, int sr
     int result = SUCCESS;
     Tree *tree = NULL;
 
-    result = tree_init(&tree, SYMBOL_LEN);
-    if (SUCCESS != result)
-    {
-        printf("failed to init tree in transform_expr_order!\n");
-        return result;
-    }
-
-
     result = expr_to_tree(&tree, src_expr, src_order); 
     if (SUCCESS != result)
     {
