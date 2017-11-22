@@ -122,7 +122,7 @@ static int tree_delete_min(Tree **tree, Tree **target)
     Tree **link = NULL;
     Tree *min = NULL;
     
-    if ((NULL == tree) || (NULL == *tree) || (NULL == min))
+    if ((NULL == tree) || (NULL == *tree) || (NULL == target))
     {
         printf("%s(%d): null pointer!\n", __FUNCTION__, __LINE__);
         return NUL_PTR;
@@ -208,20 +208,20 @@ int tree_delete(Tree **tree, void *data, int data_size)
     }
     else
     {
-        result = tree_delete_min(&cur, &min);
+        result = tree_delete_min(&cur->right, &min);
         if (SUCCESS != result)
         {
             printf("%s(%d): failed to delete min!\n", __FUNCTION__, __LINE__);
             return result;
         }
 
-        min->left = (*link)->left;
-        min->right = cur;
+        min->left = cur->left;
+        min->right = cur->right;
         *link = min;
     }
 
-    free((*link)->data);
-    free(*link);
+    free(cur->data);
+    free(cur);
 
     return SUCCESS;
 }
