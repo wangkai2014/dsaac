@@ -9,6 +9,9 @@
 #define TRUE   1
 #define FALSE  0
 
+#define MAX(a, b)    (((a) > (b)) ? (a) : (b))
+#define ABS(a, b)    (((a) > (b)) ? ((a) - (b)) : ((b) - (a)))
+
 #define MAX_BIT_NUM  32  /* int型整数以二进制表示时的最大位数 */
 
 enum err_code
