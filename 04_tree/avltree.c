@@ -103,7 +103,7 @@ static void tree_single_rotate_left(Tree **in_tree)
 
     tree->left = left->right;
     left->right = tree;
-    tree->height--;
+    tree->height -= 2;
 
     *in_tree = left;
 }
@@ -115,7 +115,7 @@ static void tree_single_rotate_right(Tree **in_tree)
 
     tree->right = right->left;
     right->left = tree;
-    tree->height--;
+    tree->height -= 2;
 
     *in_tree = right;
 }
@@ -128,12 +128,13 @@ static void tree_double_rotate_left(Tree **in_tree)
 
     left->right = right->left;
     right->left = left;
-    left->height--;
+    left->height = MAX(tree_height(left->left), tree_height(left->right)) + 1;
+    right->height = MAX(tree_height(right->left), tree_height(right->right)) + 1;
 
     left = right;
     tree->left = left->right;
     left->right = tree;
-    tree->height--;
+    tree->height -= 2;
 
     *in_tree = left;
 }
@@ -146,12 +147,13 @@ static void tree_double_rotate_right(Tree **in_tree)
 
     right->left = left->right;
     left->right = right;
-    right->height--;
+    right->height = MAX(tree_height(right->left), tree_height(right->right)) + 1;
+    left->height = MAX(tree_height(left->left), tree_height(left->right)) + 1;
 
     right = left;
     tree->right = right->left;
     right->left = tree;
-    tree->height--;
+    tree->height -= 2;
 
     *in_tree = right;
 }
@@ -184,14 +186,14 @@ static void tree_rebalance(Tree **in_tree)
     }
 }
 
-static int avl_tree_insert(Tree **in_tree, Tree *node)
+static int avl_tree_insert(Tree **in_tree, Tree *node, int data_size)
 {
     Tree *tree = *in_tree;
     Tree **child = NULL;
     int result = SUCCESS;
     int cmp_result;
 
-    cmp_result = cmp(tree->data, node->data);
+    cmp_result = cmp_data(tree->data, node->data, data_size);
     if (cmp_result == 0)
     {
         printf("%s(%d): data has existed!\n", __FUNCTION__, __LINE__);
@@ -206,7 +208,7 @@ static int avl_tree_insert(Tree **in_tree, Tree *node)
     }
     else
     {
-        result = avl_tree_insert(child, node);
+        result = avl_tree_insert(child, node, data_size);
         if (SUCCESS != result)
         {
             printf("%s(%d): failed to insert avl tree!\n", __FUNCTION__, __LINE__);
@@ -248,7 +250,7 @@ int tree_insert(Tree **tree, void *data, int data_size)
         return SUCCESS;
     }
 
-    result = avl_tree_insert(tree, node);
+    result = avl_tree_insert(tree, node, data_size);
     if (SUCCESS != result)
     {
         tree_clear(&node);
@@ -257,6 +259,16 @@ int tree_insert(Tree **tree, void *data, int data_size)
     }
 
     return result;
+}
+
+static void tree_refresh_left_height(Tree *tree)
+{
+    if (NULL != tree->left)
+    {
+        tree_refresh_left_height(tree->left);
+    }
+
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
 }
 
 static int tree_delete_min(Tree **tree, Tree **target)
@@ -281,50 +293,90 @@ static int tree_delete_min(Tree **tree, Tree **target)
 
     *link = min->right;
     *target = min;
+
+    if (NULL != *tree)
+    {
+        tree_refresh_left_height(*tree);
+    }
     
     return SUCCESS;
 }
 
-/**
- * if root->data == data, *link = &root;
- * if cur->data == data, and cur is parent's left child, *link = &parent->left
- * if cur->data == data, and cur is parent's right child, *link = &parent->right
- */
-int tree_find_parent_link(Tree **tree, Tree ***link, void *data, int data_size)
+static int avl_tree_delete_cur(Tree **in_tree)
 {
-    int result = 0;
-    Tree *cur = NULL;
+    int result = SUCCESS;
+    Tree *tree = *in_tree;
+    Tree *min = NULL;
 
-    if ((NULL == tree) || (NULL == link) || (NULL == data) || (data_size <= 0))
+    if (NULL == tree->left)
     {
-        printf("%s(%d): invalid input! data_size=%d.\n", __FUNCTION__, __LINE__, data_size);
-        return INVALID_INPUT;
+        *in_tree = tree->right;
     }
-
-    *link = tree;
-    cur = *tree;
-
-    while (NULL != cur)
+    else if (NULL == tree->right)
     {
-        result = cmp_data(data, cur->data, data_size);
-        if (0 == result)
+        *in_tree = tree->left;
+    }
+    else
+    {
+        result = tree_delete_min(&tree->right, &min);
+        if (SUCCESS != result)
         {
-            return SUCCESS;
+            printf("%s(%d): failed to delete min!\n", __FUNCTION__, __LINE__);
+            return result;
         }
-        
-        *link = (result < 0) ? &cur->left : &cur->right;
-        cur = (result < 0) ? cur->left : cur->right;
+
+        min->left = tree->left;
+        min->right = tree->right;
+        min->height = MAX(tree_height(min->left), tree_height(min->right)) + 1;
+        *in_tree = min;
     }
 
-    return NOT_FOUND;
+    free(tree->data);
+    free(tree);
+
+    return SUCCESS;
+}
+
+static int avl_tree_delete(Tree **in_tree, void *data, int data_size)
+{
+    int result = SUCCESS;
+    int cmp_result = 0;
+    Tree *tree = *in_tree;
+
+    if (NULL == tree)
+    {
+        printf("%s(%d): cannot find the node to be deleted!\n", __FUNCTION__, __LINE__);
+        return NOT_FOUND;
+    }
+
+    cmp_result = cmp_data(tree->data, data, data_size);
+
+    if (cmp_result == 0)  /* cur node is to be deleted */
+    {
+        result = avl_tree_delete_cur(in_tree);
+    }
+    else if (cmp_result < 0)
+    {
+        result = avl_tree_delete(&tree->right, data, data_size);
+    }
+    else
+    {
+        result = avl_tree_delete(&tree->left, data, data_size);
+    }
+
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
+
+    if (!tree_is_balance(tree))
+    {
+        tree_rebalance(in_tree);
+    }
+
+    return result;
 }
 
 int tree_delete(Tree **tree, void *data, int data_size)
 {
     int result = SUCCESS;
-    Tree **link = NULL;
-    Tree *cur = NULL;
-    Tree *min = NULL;
 
     if ((NULL == tree) || (NULL == data) || (data_size <= 0))
     {
@@ -332,41 +384,13 @@ int tree_delete(Tree **tree, void *data, int data_size)
         return INVALID_INPUT;
     } 
 
-    result = tree_find_parent_link(tree, &link, data, data_size);
+    result = avl_tree_delete(tree, data, data_size);
     if (SUCCESS != result)
     {
-        printf("%s(%d): failed to find parent link!\n", __FUNCTION__, __LINE__);
-        return result;
+        printf("%s(%d): failed to delete avl tree!\n", __FUNCTION__, __LINE__);
     }
 
-    cur = *link;
-
-    if (NULL == cur->left)
-    {
-        *link = cur->right;
-    }
-    else if (NULL == cur->right)
-    {
-        *link = cur->left;
-    }
-    else
-    {
-        result = tree_delete_min(&cur->right, &min);
-        if (SUCCESS != result)
-        {
-            printf("%s(%d): failed to delete min!\n", __FUNCTION__, __LINE__);
-            return result;
-        }
-
-        min->left = cur->left;
-        min->right = cur->right;
-        *link = min;
-    }
-
-    free(cur->data);
-    free(cur);
-
-    return SUCCESS;
+    return result;
 }
 
 void tree_clear(Tree **tree)
@@ -455,7 +479,7 @@ void tree_inorder_print_int(Tree *tree)
 
     tree_inorder_print_int(tree->left);
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->height);
 
     tree_inorder_print_int(tree->right);
 }
@@ -467,7 +491,7 @@ void tree_preorder_print_int(Tree *tree)
         return;
     }
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->height);
 
     tree_preorder_print_int(tree->left);
 
@@ -485,5 +509,5 @@ void tree_postorder_print_int(Tree *tree)
 
     tree_postorder_print_int(tree->right);
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->height);
 }
