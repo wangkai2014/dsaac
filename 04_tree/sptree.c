@@ -1,6 +1,6 @@
-/* implementation of binary search tree */
+/* implementation of splay tree */
 #include "utils.h"
-#include "bstree.h"
+#include "sptree.h"
 
 int tree_init(Tree **in_tree, void *data, int data_size)
 {
@@ -239,25 +239,116 @@ void tree_clear(Tree **tree)
     *tree = NULL;
 }
 
-int tree_find(Tree *tree, Tree **target, void *data, int data_size)
+static void tree_single_rotate_left(Tree **tree)
+{
+    Tree *left = (*tree)->left;
+
+    (*tree)->left = left->right;
+    left->right = *tree; 
+    *tree = left;
+}
+
+static void tree_single_rotate_right(Tree **tree)
+{
+    Tree *right = (*tree)->right;
+
+    (*tree)->right = right->left;
+    right->left = *tree;
+    *tree = right;
+}
+
+static void splay_tree_rotate(Tree **in_tree, void *data, int data_size)
+{
+    Tree *tree = *in_tree;
+
+    if (NULL != tree->left)
+    {
+        if ((NULL != tree->left->left) && (0 == cmp_data(tree->left->left->data, data, data_size)))
+        {
+            tree_single_rotate_left(in_tree);
+            tree_single_rotate_left(in_tree);
+        }
+        else if ((NULL != tree->left->right) && (0 == cmp_data(tree->left->right->data, data, data_size)))
+        {
+            tree_single_rotate_right(&tree->left);
+            tree_single_rotate_left(in_tree);
+        }
+    }
+    else if (NULL != tree->right)
+    {
+        if ((NULL != tree->right->right) && (0 == cmp_data(tree->right->right->data, data, data_size)))
+        {
+            tree_single_rotate_right(in_tree);
+            tree_single_rotate_right(in_tree);
+        }
+        else if ((NULL != tree->right->left) && (0 == cmp_data(tree->right->left->data, data, data_size)))
+        {
+            tree_single_rotate_left(&tree->right);
+            tree_single_rotate_right(in_tree);
+        }
+    }
+}
+
+static int splay_tree_find(Tree **tree, void *data, int data_size)
+{
+    int result = SUCCESS;
+
+    if (NULL == *tree)
+    {
+        return NOT_FOUND;
+    }
+
+    splay_tree_rotate(tree, data, data_size);
+
+    result = cmp_data((*tree)->data, data, data_size);
+
+    if (result == 0)
+    {
+        return SUCCESS;
+    }
+    else if (result < 0)
+    {
+        result = splay_tree_find(&(*tree)->right, data, data_size);
+    }
+    else
+    {
+        result = splay_tree_find(&(*tree)->left, data, data_size);
+    }
+
+    if (SUCCESS == result)
+    {
+        splay_tree_rotate(tree, data, data_size);
+    }
+
+    return result;
+}
+
+int tree_find(Tree **tree, void *data, int data_size)
 {
     int result = 0;
-    Tree *cur = tree;
 
-    if ((NULL == tree) || (NULL == target) || (NULL == data) || (data_size <= 0))
+    if ((NULL == tree) || (NULL == *tree) || (NULL == data) || (data_size <= 0))
     {
         printf("%s(%d): null pointer! data_size=%d.\n", __FUNCTION__, __LINE__, data_size);
         return INVALID_INPUT;
     }
 
-    while ((NULL != cur) && (0 != result))
+    result = splay_tree_find(tree, data, data_size);
+    if (SUCCESS != result)
     {
-        result = cmp_data(data, cur->data, data_size);
-
-        cur = (result < 0) ? cur->left : cur->right;
+        printf("%s(%d): failed to find the target in splay tree!\n", __FUNCTION__, __LINE__);
+        return result;
     }
 
-    *target = cur;
+    result = cmp_data((*tree)->data, data, data_size);
+    if (result > 0)
+    {
+        tree_single_rotate_left(tree);
+    }
+    else if (result < 0)
+    {
+        tree_single_rotate_right(tree);
+    }
 
     return SUCCESS;
 }
