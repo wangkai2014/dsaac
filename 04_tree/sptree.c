@@ -274,7 +274,8 @@ static void splay_tree_rotate(Tree **in_tree, void *data, int data_size)
             tree_single_rotate_left(in_tree);
         }
     }
-    else if (NULL != tree->right)
+
+    if (NULL != tree->right)
     {
         if ((NULL != tree->right->right) && (0 == cmp_data(tree->right->right->data, data, data_size)))
         {
