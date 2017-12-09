@@ -1,12 +1,13 @@
 CFLAGS = -g
 PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
-		 00_test_avltree 00_test_sptree \
+		 00_test_avltree 00_test_sptree 11_test_cbstree \
 
 00_AOBJ = 00_test_avltree.o avltree.o utils.o
 00_BOBJ = 00_test_bstree.o bstree.o utils.o
 00_POBJ = 00_test_sptree.o sptree.o utils.o
 00_SOBJ = 00_test_stack.o stack.o utils.o
 00_TOBJ = 00_transform_expr_order.o expr.o stack.o bstree.o utils.o
+11_OBJ  = 11_test_cbstree.o cbstree.o utils.o 
 
 all: $(PROGS)
 
@@ -24,6 +25,9 @@ all: $(PROGS)
 
 00_test_sptree: $(00_POBJ)
 	cc $(CFLAGS) -o $@ $(00_POBJ)
+
+11_test_cbstree: $(11_OBJ)
+	cc $(CFLAGS) -o $@ $(11_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
