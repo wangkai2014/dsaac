@@ -20,6 +20,7 @@ int tree_insert(Tree **tree, void *data, int data_size);
 int tree_delete(Tree **tree, void *data, int data_size);
 void tree_clear(Tree **tree);
 int tree_height(Tree *tree);
+int tree_internal_path_len(Tree *tree);
 int tree_find(Tree *tree, Tree **target, void *data, int data_size);
 int tree_find_min(Tree *tree, Tree **target);
 int tree_find_max(Tree *tree, Tree **target);

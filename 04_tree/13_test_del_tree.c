@@ -2,9 +2,9 @@
 #include "bstree.h"
 
 #define TREE_NUM  3
-#define TEST_NUM  10
-#define NODE_NUM  1000   /* number of tree's node */
-#define MAX_DATA      10000
+#define TEST_NUM  100
+#define NODE_NUM  100   /* number of tree's node */
+#define MAX_DATA  10000
 
 typedef int (*FUNC_PTR)(Tree **tree);
 
@@ -36,8 +36,6 @@ int main()
 
         set_array(arr, NODE_NUM);
 
-        print_array(arr, NODE_NUM);
-
         for (tree_id = 0; tree_id < TREE_NUM; tree_id++)
         {
             result = tree_init_by_int_arr(tree + tree_id, arr, NODE_NUM);
@@ -67,7 +65,7 @@ void set_array(int *arr, int num)
 
     for (pos = 0; pos < num; pos++)
     {
-        arr[pos] = (rand() % MAX_DATA) + pos * 13 % 7;
+        arr[pos] = (rand() % MAX_DATA) + rand() % 17;
     }
 }
 
@@ -89,8 +87,8 @@ int test_tree_delete(Tree **tree, int tree_id, int del_time)
 {
     int time;
     int result;
-    int cur_height;
-    int ttl_height = 0;
+    int cur_ipl;
+    int ttl_ipl = 0;
     char method[3][15] = {"1.left:\0", "2.alternate:\0", "3.random:\0"};
 
     printf("%s\n", method[tree_id]);
@@ -104,13 +102,13 @@ int test_tree_delete(Tree **tree, int tree_id, int del_time)
             return result;
         }
 
-        cur_height = tree_height(*tree);
-        ttl_height += cur_height;
+        cur_ipl = tree_internal_path_len(*tree);
+        ttl_ipl += cur_ipl;
 
-        printf("%d ", cur_height);
+        printf("%d ", cur_ipl);
     }
 
-    printf("\ntotal height: %d.\n\n", ttl_height);
+    printf("\naverage ipl: %d.\n\n", ttl_ipl / del_time);
 
     return SUCCESS;
 }

@@ -250,6 +250,21 @@ int tree_height(Tree *tree)
     return (MAX(tree_height(tree->left), tree_height(tree->right)) + 1);
 }
 
+static int tree_ipl(Tree *tree, int depth)
+{
+    if (NULL == tree)
+    {
+        return 0;
+    }
+
+    return (depth + tree_ipl(tree->left, depth + 1) + tree_ipl(tree->right, depth + 1));
+}
+
+int tree_internal_path_len(Tree *tree)
+{
+    return tree_ipl(tree, 0);
+}
+
 int tree_find(Tree *tree, Tree **target, void *data, int data_size)
 {
     int result = 0;
