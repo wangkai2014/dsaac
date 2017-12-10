@@ -24,6 +24,8 @@ int tree_find(Tree *tree, Tree **target, void *data, int data_size);
 int tree_find_min(Tree *tree, Tree **target);
 int tree_find_max(Tree *tree, Tree **target);
 
+int tree_insert_nonrecur(Tree **tree, void *data, int data_size);
+
 void tree_inorder_print_int(Tree *tree);
 void tree_preorder_print_int(Tree *tree);
 void tree_postorder_print_int(Tree *tree);

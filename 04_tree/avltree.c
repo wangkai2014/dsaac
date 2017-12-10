@@ -1,5 +1,6 @@
 /* implementation of avl tree */
 #include "utils.h"
+#include "stack.h"
 #include "avltree.h"
 
 int tree_init(Tree **in_tree, void *data, int data_size)
@@ -103,7 +104,7 @@ static void tree_single_rotate_left(Tree **in_tree)
 
     tree->left = left->right;
     left->right = tree;
-    tree->height -= 2;
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
 
     *in_tree = left;
 }
@@ -115,7 +116,7 @@ static void tree_single_rotate_right(Tree **in_tree)
 
     tree->right = right->left;
     right->left = tree;
-    tree->height -= 2;
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
 
     *in_tree = right;
 }
@@ -134,7 +135,7 @@ static void tree_double_rotate_left(Tree **in_tree)
     left = right;
     tree->left = left->right;
     left->right = tree;
-    tree->height -= 2;
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
 
     *in_tree = left;
 }
@@ -153,7 +154,7 @@ static void tree_double_rotate_right(Tree **in_tree)
     right = left;
     tree->right = right->left;
     right->left = tree;
-    tree->height -= 2;
+    tree->height = MAX(tree_height(tree->left), tree_height(tree->right)) + 1;
 
     *in_tree = right;
 }
@@ -259,6 +260,113 @@ int tree_insert(Tree **tree, void *data, int data_size)
     }
 
     return result;
+}
+
+static int avl_tree_rebalance(Stack *stck)
+{
+    int result;
+    Tree **tree = NULL;
+
+    while (!stack_is_empty(stck))
+    {
+        result = stack_pop(stck, &tree, sizeof(tree));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): err %d: failed to pop stack!\n", __FUNCTION__, __LINE__, result);
+            return result;
+        }
+
+        if (!tree_is_balance(*tree))
+        {
+            tree_rebalance(tree);
+        }
+
+        (*tree)->height = MAX(tree_height((*tree)->left), tree_height((*tree)->right)) + 1;
+    }
+
+    return SUCCESS;
+}
+
+static int avl_tree_insert_nonrecur(Tree **in_tree, Tree *node, int data_size, Stack *stck)
+{
+    Tree **tree = in_tree;
+    int result = SUCCESS;
+    int cmp_result;
+
+    while (NULL != *tree)
+    {
+        cmp_result = cmp_data((*tree)->data, node->data, data_size);
+        if (cmp_result == 0)
+        {
+            printf("%s(%d): data has existed!\n", __FUNCTION__, __LINE__);
+            return DUPLICATED;
+        }
+
+        result = stack_push(stck, &tree, sizeof(tree));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): err %d: failed to push stack!\n", __FUNCTION__, __LINE__, result);
+            return result;
+        }
+
+        tree = (cmp_result < 0) ? &(*tree)->right : &(*tree)->left;
+    }
+
+    *tree = node;
+
+    return SUCCESS;
+}
+
+int tree_insert_nonrecur(Tree **tree, void *data, int data_size)
+{
+    int result;
+    Tree *node = NULL;
+    Stack *stck = NULL;
+
+    if ((NULL == tree) || (NULL == data) || (data_size <= 0))
+    {
+        printf("%s(%d): invalid input! data_size=%d.\n", __FUNCTION__, __LINE__, data_size);
+        return INVALID_INPUT;
+    } 
+
+    result = tree_init(&node, data, data_size);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to init tree!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    if (NULL == *tree)  /* empty tree */
+    {
+        *tree = node;
+        return SUCCESS;
+    }
+
+    result = stack_init(&stck, sizeof(Tree **));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): err[%d]: failed to init stack!\n", __FUNCTION__, __LINE__, result);
+        return result;
+    }
+
+    result = avl_tree_insert_nonrecur(tree, node, data_size, stck);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): err[%d]: failed to insert avl tree!\n", __FUNCTION__, __LINE__, result);
+        tree_clear(&node);
+        return result;
+    }
+
+    result = avl_tree_rebalance(stck);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): err[%d]: failed to rebalance avl tree!\n", __FUNCTION__, __LINE__, result);
+        tree_clear(&node);
+    }
+
+    stack_clear(&stck);
+
+    return SUCCESS;
 }
 
 static void tree_refresh_left_height(Tree *tree)
