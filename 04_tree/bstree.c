@@ -97,7 +97,7 @@ int tree_insert(Tree **tree, void *data, int data_size)
         result = cmp_data(data, cur->data, data_size);
         if (0 == result)
         {
-            printf("%s(%d): the node has existed!\n", __FUNCTION__, __LINE__);
+            printf("%s(%d): the node[%d] has existed!\n", __FUNCTION__, __LINE__, *(int*)data);
             return DUPLICATED;
         }
 
@@ -236,7 +236,18 @@ void tree_clear(Tree **tree)
     tree_clear(&(*tree)->right);
 
     free((*tree)->data);
+    free(*tree);
     *tree = NULL;
+}
+
+int tree_height(Tree *tree)
+{
+    if (NULL == tree)
+    {
+        return 0;
+    }
+
+    return (MAX(tree_height(tree->left), tree_height(tree->right)) + 1);
 }
 
 int tree_find(Tree *tree, Tree **target, void *data, int data_size)
@@ -342,4 +353,31 @@ void tree_postorder_print_int(Tree *tree)
     tree_postorder_print_int(tree->right);
 
     printf("%d ", *(int *)tree->data);
+}
+
+int tree_init_by_int_arr(Tree **tree, int *arr, int num)
+{
+    int result;
+    int pos;
+
+    if ((NULL == tree) || (NULL == arr) || (num <= 0))
+    {
+        printf("%s(%d): invalid input! num=%d.\n", __FUNCTION__, __LINE__, num);
+        return INVALID_INPUT;
+    }
+
+    *tree = NULL;
+
+    for (pos = 0; pos < num; pos++)
+    {
+        /* ignore the duplicate elements. */
+        result = tree_insert(tree, arr + pos, sizeof(int));
+        if ((SUCCESS != result) && (DUPLICATED != result))
+        {
+            printf("%s(%d): err[%d]: failed to insert tree! data=%d.\n", __FUNCTION__, __LINE__, result, arr[pos]);
+            return result;
+        }
+    }
+
+    return SUCCESS;
 }
