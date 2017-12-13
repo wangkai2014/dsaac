@@ -115,72 +115,10 @@ int tree_insert(Tree **tree, void *data, int data_size)
     return SUCCESS;
 }
 
-static int tree_delete_min(Tree **tree, Tree **target)
-{
-    int result = SUCCESS;
-    Tree **link = NULL;
-    Tree *min = NULL;
-    
-    if ((NULL == tree) || (NULL == *tree) || (NULL == target))
-    {
-        printf("%s(%d): null pointer!\n", __FUNCTION__, __LINE__);
-        return NUL_PTR;
-    }
-
-    link = tree;
-    min = *tree;
-    while (NULL != min->left)
-    {
-        link = &min->left;
-        min = min->left;
-    }
-
-    *link = min->right;
-    *target = min;
-    
-    return SUCCESS;
-}
-
-/**
- * if root->data == data, *link = &root;
- * if cur->data == data, and cur is parent's left child, *link = &parent->left
- * if cur->data == data, and cur is parent's right child, *link = &parent->right
- */
-int tree_find_parent_link(Tree **tree, Tree ***link, void *data, int data_size)
-{
-    int result = 0;
-    Tree *cur = NULL;
-
-    if ((NULL == tree) || (NULL == link) || (NULL == data) || (data_size <= 0))
-    {
-        printf("%s(%d): invalid input! data_size=%d.\n", __FUNCTION__, __LINE__, data_size);
-        return INVALID_INPUT;
-    }
-
-    *link = tree;
-    cur = *tree;
-
-    while (NULL != cur)
-    {
-        result = cmp_data(data, cur->data, data_size);
-        if (0 == result)
-        {
-            return SUCCESS;
-        }
-        
-        *link = (result < 0) ? &cur->left : &cur->right;
-        cur = (result < 0) ? cur->left : cur->right;
-    }
-
-    return NOT_FOUND;
-}
-
 int tree_delete(Tree **tree, void *data, int data_size)
 {
     int result = SUCCESS;
-    Tree **link = NULL;
     Tree *cur = NULL;
-    Tree *min = NULL;
 
     if ((NULL == tree) || (NULL == data) || (data_size <= 0))
     {
@@ -188,37 +126,41 @@ int tree_delete(Tree **tree, void *data, int data_size)
         return INVALID_INPUT;
     } 
 
-    result = tree_find_parent_link(tree, &link, data, data_size);
+    result = tree_find(tree, data, data_size);
     if (SUCCESS != result)
     {
-        printf("%s(%d): failed to find parent link!\n", __FUNCTION__, __LINE__);
+        printf("%s(%d): failed to find the data!\n", __FUNCTION__, __LINE__);
         return result;
     }
 
-    cur = *link;
+    cur = *tree;
 
     if (NULL == cur->left)
     {
-        *link = cur->right;
-    }
-    else if (NULL == cur->right)
-    {
-        *link = cur->left;
-    }
-    else
-    {
-        result = tree_delete_min(&cur->right, &min);
-        if (SUCCESS != result)
-        {
-            printf("%s(%d): failed to delete min!\n", __FUNCTION__, __LINE__);
-            return result;
-        }
-
-        min->left = cur->left;
-        min->right = cur->right;
-        *link = min;
+        *tree = cur->right;
+        free(cur->data);
+        free(cur);
+        return SUCCESS;
     }
 
+    cur = cur->left;
+
+    /* find the lastest node in the left child */
+    while (NULL != cur->right)
+    {
+        cur = cur->right;
+    }
+
+    result = tree_find(&(*tree)->left, cur->data, data_size);
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to find the lastest left child!\n", __FUNCTION__, __LINE__);
+        return result;
+    }
+
+    cur = *tree;
+    cur->left->right = cur->right;
+    *tree = cur->left;
     free(cur->data);
     free(cur);
 
