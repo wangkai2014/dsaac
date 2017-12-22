@@ -3,7 +3,7 @@ PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
 		 00_test_avltree 00_test_sptree 11_test_cbstree \
 		 13_test_del_tree 19_insert_avl_nonrecur  27_count_tree_node \
 		 29_random_bstree 29_recur_random_bstree 30_avltree_with_fewest_node \
-		 31_perfect_bstree 32_print_bounded_bstree \
+		 31_perfect_bstree 32_print_bounded_bstree 33_set_tree_coordinate \
 
 00_AOBJ = 00_test_avltree.o avltree.o stack.o utils.o
 00_BOBJ = 00_test_bstree.o bstree.o utils.o
@@ -19,6 +19,7 @@ PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
 30_OBJ = 30_avltree_with_fewest_node.o bstree.o utils.o
 31_OBJ = 31_perfect_bstree.o bstree.o utils.o
 32_OBJ = 32_print_bounded_bstree.o bstree.o utils.o
+33_OBJ = 33_set_tree_coordinate.o bstree.o utils.o
 
 all: $(PROGS)
 
@@ -63,6 +64,9 @@ all: $(PROGS)
 
 32_print_bounded_bstree: $(32_OBJ)
 	cc $(CFLAGS) -o $@ $(32_OBJ)
+
+33_set_tree_coordinate: $(33_OBJ)
+	cc $(CFLAGS) -o $@ $(33_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o

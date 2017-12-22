@@ -29,6 +29,15 @@ int tree_init(Tree **in_tree, void *data, int data_size)
 
     memcpy(tree->data, data, data_size);
 
+    tree->pos = malloc(sizeof(Position));
+    if (NULL == tree->pos)
+    {
+        printf("%s(%d): failed to malloc memory!\n", __FUNCTION__, __LINE__);
+        return MALLOC_FAIL;
+    }
+
+    memset(tree->pos, 0, sizeof(Position));
+
     tree->left = NULL;
     tree->right = NULL;
 
@@ -390,6 +399,84 @@ int tree_init_by_int_arr(Tree **tree, int *arr, int num)
         if ((SUCCESS != result) && (DUPLICATED != result))
         {
             printf("%s(%d): err[%d]: failed to insert tree! data=%d.\n", __FUNCTION__, __LINE__, result, arr[pos]);
+            return result;
+        }
+    }
+
+    return SUCCESS;
+}
+
+static void tree_set_x(Tree *tree, int *x)
+{
+    if (NULL == tree)
+    {
+        return;
+    }
+    
+    tree_set_x(tree->left, x);
+
+    tree->pos->x = (*x)++;
+
+    tree_set_x(tree->right, x);
+}
+
+static void tree_set_y(Tree *tree, int y)
+{
+    if (NULL == tree)
+    {
+        return;
+    }
+
+    tree->pos->y = y;
+
+    tree_set_y(tree->left, y-1);
+    tree_set_y(tree->right, y-1);
+}
+
+void tree_set_position(Tree *tree)
+{
+    int x = 0;
+
+    tree_set_x(tree, &x);
+
+    tree_set_y(tree, 0);
+}
+
+static void generate_random_arr(int *arr, int len)
+{
+    int pos;
+    int idx;
+    int tmp;
+
+    for (pos = 0; pos < len; pos++)
+    {
+        arr[pos] = rand() % MAX_TREE_DATA;
+    }
+}
+
+int tree_random_create(Tree **tree, int num)
+{
+    int pos;
+    int result;
+    int *arr = NULL;
+
+    srand((unsigned)time(0));
+
+    arr = malloc(sizeof(int) * num);
+    if (NULL == arr)
+    {
+        printf("%s(%d): failed to malloc memory for arr!\n", __FUNCTION__, __LINE__);
+        return MALLOC_FAIL;
+    }
+
+    generate_random_arr(arr, num);
+
+    for (pos = 0; pos < num; pos++)
+    {
+        result = tree_insert(tree, arr + pos, sizeof(int));
+        if ((SUCCESS != result) && (DUPLICATED != result))
+        {
+            printf("%s(%d): failed to insert tree!\n", __FUNCTION__, __LINE__);
             return result;
         }
     }
