@@ -5,24 +5,27 @@ PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
 		 13_test_del_tree 19_insert_avl_nonrecur  27_count_tree_node \
 		 29_random_bstree 29_recur_random_bstree 30_avltree_with_fewest_node \
 		 31_perfect_bstree 32_print_bounded_bstree 33_set_tree_coordinate \
+		 35_tree_level_order \
 
+BS_OBJ  = bstree.o queue.o list.o utils.o
 00_AOBJ = 00_test_avltree.o avltree.o stack.o utils.o
-00_BOBJ = 00_test_bstree.o bstree.o utils.o
+00_BOBJ = 00_test_bstree.o $(BS_OBJ)
 00_LOBJ = 00_test_list.o list.o utils.o
 00_POBJ = 00_test_sptree.o sptree.o utils.o
 00_QOBJ = 00_test_queue.o queue.o list.o utils.o
 00_SOBJ = 00_test_stack.o stack.o utils.o
-00_TOBJ = 00_transform_expr_order.o expr.o stack.o bstree.o utils.o
+00_TOBJ = 00_transform_expr_order.o expr.o stack.o $(BS_OBJ)
 11_OBJ = 11_test_cbstree.o cbstree.o utils.o 
-13_OBJ = 13_test_del_tree.o bstree.o utils.o
+13_OBJ = 13_test_del_tree.o $(BS_OBJ)
 19_OBJ = 19_insert_avl_nonrecur.o avltree.o stack.o utils.o
-27_OBJ = 27_count_tree_node.o bstree.o utils.o
-29_OBJ = 29_random_bstree.o bstree.o utils.o
-29_ROBJ = 29_recur_random_bstree.o bstree.o utils.o
-30_OBJ = 30_avltree_with_fewest_node.o bstree.o utils.o
-31_OBJ = 31_perfect_bstree.o bstree.o utils.o
-32_OBJ = 32_print_bounded_bstree.o bstree.o utils.o
-33_OBJ = 33_set_tree_coordinate.o bstree.o utils.o
+27_OBJ = 27_count_tree_node.o $(BS_OBJ)
+29_OBJ = 29_random_bstree.o $(BS_OBJ)
+29_ROBJ = 29_recur_random_bstree.o $(BS_OBJ)
+30_OBJ = 30_avltree_with_fewest_node.o $(BS_OBJ)
+31_OBJ = 31_perfect_bstree.o $(BS_OBJ)
+32_OBJ = 32_print_bounded_bstree.o $(BS_OBJ)
+33_OBJ = 33_set_tree_coordinate.o $(BS_OBJ)
+35_OBJ = 35_tree_level_order.o $(BS_OBJ)
 
 all: $(PROGS)
 
@@ -76,6 +79,9 @@ all: $(PROGS)
 
 33_set_tree_coordinate: $(33_OBJ)
 	cc $(CFLAGS) -o $@ $(33_OBJ)
+
+35_tree_level_order: $(35_OBJ)
+	cc $(CFLAGS) -o $@ $(35_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o

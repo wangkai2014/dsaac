@@ -12,7 +12,7 @@ struct queue
 
 typedef struct queue Queue;
 
-int queue_init(Queue **queue);
+int queue_init(Queue **queue, int data_size);
 int queue_is_empty(Queue *queue);
 int queue_enqueue(Queue *queue, void *data, int data_size);
 int queue_dequeue(Queue *queue, void *data, int data_size);

@@ -91,7 +91,7 @@ void test_queue_init(Queue **queue)
     int result = SUCCESS;
     int size = 0;
 
-    result = queue_init(queue);
+    result = queue_init(queue, sizeof(int));
     if (SUCCESS != result)
     {
         printf("failed to init queue!\n");

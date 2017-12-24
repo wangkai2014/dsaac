@@ -1,5 +1,6 @@
 /* implementation of binary search tree */
 #include "utils.h"
+#include "queue.h"
 #include "bstree.h"
 
 int tree_init(Tree **in_tree, void *data, int data_size)
@@ -379,8 +380,68 @@ void tree_postorder_print_int(Tree *tree)
     printf("%d ", *(int *)tree->data);
 }
 
-void tree_levelorder_print_int(Tree *tree)
-{}
+void tree_levelorder_print_int(Tree *in_tree)
+{
+    int result;
+    Queue *queue = NULL;
+    Tree *tree = in_tree;
+
+    if (NULL == tree)
+    {
+        return;
+    }
+
+    result = queue_init(&queue, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to init queue!\n", __FUNCTION__, __LINE__);
+        return;
+    }
+
+    result = queue_enqueue(queue, &tree, sizeof(Tree *));
+    if (SUCCESS != result)
+    {
+        printf("%s(%d): failed to enqueue tree.\n", __FUNCTION__, __LINE__);
+        return;
+    }
+
+    while (!queue_is_empty(queue))
+    {
+        result = queue_dequeue(queue, &tree, sizeof(Tree *));
+        if (SUCCESS != result)
+        {
+            printf("%s(%d): failed to dequeue tree.\n", __FUNCTION__, __LINE__);
+            queue_clear(&queue);
+            return;
+        }
+
+        printf("%d ", *(int *)tree->data);
+
+        if (NULL != tree->left)
+        {
+            result = queue_enqueue(queue, &tree->left, sizeof(Tree *));
+            if (SUCCESS != result)
+            {
+                printf("%s(%d): failed to enqueue tree.\n", __FUNCTION__, __LINE__);
+                queue_clear(&queue);
+                return;
+            }
+        }
+
+        if (NULL != tree->right)
+        {
+            result = queue_enqueue(queue, &tree->right, sizeof(Tree *));
+            if (SUCCESS != result)
+            {
+                printf("%s(%d): failed to enqueue tree.\n", __FUNCTION__, __LINE__);
+                queue_clear(&queue);
+                return;
+            }
+        }
+    }
+
+    queue_clear(&queue);
+}
 
 int tree_init_by_int_arr(Tree **tree, int *arr, int num)
 {

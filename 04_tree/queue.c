@@ -1,7 +1,7 @@
 #include "utils.h"
 #include "queue.h"
 
-int queue_init(Queue **in_queue)
+int queue_init(Queue **in_queue, int data_size)
 {
     int result = SUCCESS;
     Queue *queue;
@@ -13,7 +13,7 @@ int queue_init(Queue **in_queue)
         return MALLOC_FAIL;
     }
 
-    result = list_init(&queue->head, sizeof(int));
+    result = list_init(&queue->head, data_size);
     if (SUCCESS != result)
     {
         printf("failed to init list of queue when init!\n");
