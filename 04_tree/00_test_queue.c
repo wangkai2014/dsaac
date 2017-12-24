@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "aqueue.h"
+#include "queue.h"
 
 enum OPER_CODE
 {
@@ -13,16 +13,16 @@ enum OPER_CODE
     OPER_INVALID
 };
 
-void operate_queue(queue *que, int operation);
-void test_queue_init(queue *que);
-void test_queue_enqueue(queue que);
-void test_queue_dequeue(queue que);
-void test_queue_front(queue que);
+void operate_queue(Queue **queue, int operation);
+void test_queue_init(Queue **queue);
+void test_queue_enqueue(Queue *queue);
+void test_queue_dequeue(Queue *queue);
+void test_queue_front(Queue *queue);
 
 int main()
 {
     int operation = 0;
-    queue que = NULL;
+    Queue *queue = NULL;
 
     while (operation < OPER_QUIT)
     {
@@ -30,54 +30,54 @@ int main()
         printf("\nEnter operation: ");
         scanf("%d", &operation);
 
-        operate_queue(&que, operation);
+        operate_queue(&queue, operation);
     }
 
-    if (NULL != que)
+    if (NULL != queue)
     {
-        queue_clear(&que);
+        queue_clear(&queue);
     }
 
     return 0;
 }
 
-void operate_queue(queue *que, int operation)
+void operate_queue(Queue **queue, int operation)
 {
     switch (operation)
     {
         case OPER_INIT:
         {
-            test_queue_init(que);
+            test_queue_init(queue);
             break;
         }
 
         case OPER_CLEAR:
         {
-            queue_clear(que);
+            queue_clear(queue);
             break;
         }
 
         case OPER_ENQUE:
         {
-            test_queue_enqueue(*que);
+            test_queue_enqueue(*queue);
             break;
         }
 
         case OPER_DEQUE:
         {
-            test_queue_dequeue(*que);
+            test_queue_dequeue(*queue);
             break;
         }
     
         case OPER_FRONT:
         {
-            test_queue_front(*que);
+            test_queue_front(*queue);
             break;
         }
 
         case OPER_PRINT:
         {
-            queue_print(*que);
+            queue_print(*queue);
             break;
         }
 
@@ -86,18 +86,15 @@ void operate_queue(queue *que, int operation)
     }
 }
 
-void test_queue_init(queue *que)
+void test_queue_init(Queue **queue)
 {
     int result = SUCCESS;
     int size = 0;
 
-    printf("Enter queue's size: ");
-    scanf("%d", &size);
-
-    result = queue_init(que, size);
+    result = queue_init(queue);
     if (SUCCESS != result)
     {
-        printf("failed to init queue! size = %d.\n", size);
+        printf("failed to init queue!\n");
     }
     else
     {
@@ -105,7 +102,7 @@ void test_queue_init(queue *que)
     }
 }
 
-void test_queue_enqueue(queue que)
+void test_queue_enqueue(Queue *queue)
 {
     int result = SUCCESS;
     int num = 0;
@@ -130,7 +127,7 @@ void test_queue_enqueue(queue que)
 
     for (pos = 0; pos < num; pos++)
     {
-        result = queue_enqueue(que, arr[pos]);
+        result = queue_enqueue(queue, arr + pos, sizeof(int));
         if (SUCCESS != result)
         {
             printf("failed to enqueue element %d!\n", arr[pos]);
@@ -144,7 +141,7 @@ void test_queue_enqueue(queue que)
     printf("enqueue successfully.\n");
 }
 
-void test_queue_dequeue(queue que)
+void test_queue_dequeue(Queue *queue)
 {
     int result = SUCCESS;
     int pos = 0;
@@ -157,7 +154,7 @@ void test_queue_dequeue(queue que)
     printf("dequeueing...\n");
     for (pos = 0; pos < num; pos++)
     {
-        result = queue_dequeue(que, &elem);
+        result = queue_dequeue(queue, &elem, sizeof(int));
         if (SUCCESS != result)
         {
             printf("failed to dequeue elment! pos = %d.\n", pos);
@@ -171,12 +168,12 @@ void test_queue_dequeue(queue que)
     printf("\n");
 }
 
-void test_queue_front(queue que)
+void test_queue_front(Queue *queue)
 {
     int result = SUCCESS;
     int front = 0;
 
-    result = queue_front(que, &front);
+    result = queue_front(queue, &front, sizeof(int));
     if (SUCCESS != result)
     {
         printf("failed to get the front of the queue!\n");

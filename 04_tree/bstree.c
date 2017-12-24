@@ -379,6 +379,9 @@ void tree_postorder_print_int(Tree *tree)
     printf("%d ", *(int *)tree->data);
 }
 
+void tree_levelorder_print_int(Tree *tree)
+{}
+
 int tree_init_by_int_arr(Tree **tree, int *arr, int num)
 {
     int result;
