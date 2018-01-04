@@ -9,6 +9,8 @@
 #define TRUE   1
 #define FALSE  0
 
+#define ERR_MSG(format, ...)  printf("%s(%d): ", __FUNCTION__, __LINE__); printf(format, ##__VA_ARGS__)
+
 #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
 #define ABS(a, b)    (((a) > (b)) ? ((a) - (b)) : ((b) - (a)))
 

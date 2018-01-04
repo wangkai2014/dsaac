@@ -5,22 +5,23 @@
 #define ORDER  3
 
 typedef struct Tree Tree;
+typedef int Data; 
 
 struct Tree
 {
-    int num;     /* number of child nodes */
-    int *data;
-    Tree **child;
+    /* we set the size of array is one more than order 
+     * for the convenience of insertion */
+    Tree *parent;
+    Data *data[ORDER + 1];
+    Tree *child[ORDER + 1];
 };
 
-int tree_create(Tree **tree, int data);
-int tree_insert(Tree **tree, int data);
-int tree_delete(Tree **tree, int data);
+int tree_init(Tree **tree);
+int tree_insert(Tree **tree, Data *data);
+int tree_delete(Tree **tree, Data *data);
 void tree_clear(Tree **tree);
-int tree_find(Tree *tree, Tree **target, int data);
+int tree_find(Tree *tree, Tree **target, Data *data);
 
-void tree_inorder_print_int(Tree *tree);
-void tree_preorder_print_int(Tree *tree);
-void tree_postorder_print_int(Tree *tree);
+void tree_levelorder_print_int(Tree *tree);
 
 #endif
