@@ -111,19 +111,25 @@ static int tree_child_num(Tree *tree)
 {
     int pos;
 
-    for (pos = 0; pos <= ORDER; pos++)
+    if (tree_is_leaf(tree))
     {
-        if (NULL == tree->data[pos])
-        {
-            break;
-        }
+        for (pos = 0; tree->data[pos] != NULL; pos++);
+    }
+    else
+    {
+        for (pos = 0; tree->child[pos] != NULL; pos++);
     }
 
-    return (tree_is_leaf(tree) ? pos : (pos + 1));
+    return pos;
 }
 
 static Data *tree_min_data(Tree *tree)
 {
+    if (NULL == tree)
+    {
+        return NULL;
+    }
+
     while (!tree_is_leaf(tree))
     {
         tree = tree->child[0];
@@ -287,7 +293,7 @@ int tree_insert(Tree **tree, Data *data)
     int result = SUCCESS;
     Tree *leaf = NULL;
 
-    if (NULL == tree)
+    if ((NULL == tree) || (NULL == data))
     {
         ERR_MSG("null pointer!\n");
         return NUL_PTR;
@@ -315,8 +321,291 @@ int tree_insert(Tree **tree, Data *data)
     return SUCCESS;
 }
 
+static int tree_delete_directly(Tree **in_tree, Data *data, Tree **target)
+{
+    int result;
+    int pos;
+    Tree *tree = *in_tree;
+
+    /* find the position of the target data */
+    while (!tree_is_leaf(tree))
+    {
+        pos = 0;
+        while ((tree->data[pos] != NULL) &&
+               (cmp_data(tree->data[pos], data) <= 0))
+        {
+            pos++;
+        }
+
+        tree = tree->child[pos];
+    }
+
+    pos = 0;
+    while ((tree->data[pos] != NULL) &&
+           (cmp_data(tree->data[pos], data) != 0))
+    {
+        pos++;
+    }
+
+    if (tree->data[pos] == NULL)
+    {
+        ERR_MSG("not found!\n");
+        return NOT_FOUND;
+    }
+
+    free(tree->data[pos]);
+
+    for (; tree->data[pos] != NULL; pos++)
+    {
+        tree->data[pos] = tree->data[pos + 1];
+    }
+
+    *target = tree;
+
+    return SUCCESS;
+}
+
+static void tree_refresh_data(Tree *tree)
+{
+    int pos;
+
+    if ((NULL == tree) || (NULL == tree->child[0]))
+    {
+        return;
+    }
+
+    for (pos = 0; pos < ORDER; pos++)
+    {
+        tree_refresh_data(tree->child[pos]);
+    }
+
+    for (pos = 0; pos < ORDER - 1; pos++)
+    {
+        tree->data[pos] = tree_min_data(tree->child[pos + 1]);
+    }
+}
+
+static void tree_merge_two_leaf(Tree *leaf, Tree *sibl, int leaf_pos)
+{
+    int pos;
+
+    if (leaf_pos == 0)
+    {
+        for (pos = 1; pos < ORDER; pos++)
+        {
+            leaf->data[pos] = sibl->data[pos - 1];
+        }
+    }
+    else
+    {
+        leaf->data[ORDER - 1] = leaf->data[0];
+
+        for (pos = 0; pos < ORDER - 1; pos++)
+        {
+            leaf->data[pos] = sibl->data[pos];
+        }
+    }
+
+    /* get sibling's position */
+    pos = (leaf_pos == 0)? 1 : (leaf_pos - 1);
+
+    for (; pos < ORDER; pos++)
+    {
+        sibl->parent->child[pos] = sibl->parent->child[pos + 1];
+    }
+
+    free(sibl);
+}
+
+static void tree_steal_from_sibl_leaf(Tree *leaf, Tree *sibl, int pos)
+{
+    if (pos == 0)
+    {
+        leaf->data[1] = sibl->data[0];
+
+        for (pos = 0; pos < ORDER; pos++)
+        {
+            sibl->data[pos] = sibl->data[pos + 1];
+        }
+    }
+    else
+    {
+        leaf->data[1] = leaf->data[0];
+        leaf->data[0] = sibl->data[ORDER - 1];
+        sibl->data[ORDER - 1] = NULL;
+    }
+}
+
+/* adjust after delete a date of some leaf:
+ * 1. if the leaf's sibling have 2 datas, then merge two leaf 
+ * 2. if the leaf's sibling have 3 datas, then steal 1 data from him */
+static int tree_delete_leaf_adjust(Tree **in_tree, Tree *leaf)
+{
+    int pos;
+    Tree *sibl;
+
+    /* find out the position of the leaf among its sibling */
+    for (pos = 0; leaf->parent->child[pos] != leaf; pos++);
+
+    sibl = (pos == 0)? leaf->parent->child[1] : leaf->parent->child[pos - 1];
+
+    if (tree_child_num(sibl) < ORDER)
+    {
+        tree_merge_two_leaf(leaf, sibl, pos);
+    }
+    else
+    {
+        tree_steal_from_sibl_leaf(leaf, sibl, pos);
+    }
+
+    return SUCCESS;
+}
+
+static void tree_merge_two_nonleaf(Tree *nonleaf, Tree *sibl, int nonleaf_pos)
+{
+    int pos;
+
+    if (nonleaf_pos == 0)
+    {
+        for (pos = 1; pos < ORDER; pos++)
+        {
+            nonleaf->child[pos] = sibl->child[pos - 1];
+            nonleaf->child[pos]->parent = nonleaf;
+        }
+    }
+    else
+    {
+        nonleaf->child[ORDER - 1] = nonleaf->child[0];
+
+        for (pos = 0; pos < ORDER - 1; pos++)
+        {
+            nonleaf->child[pos] = sibl->child[pos];
+            nonleaf->child[pos]->parent = nonleaf;
+        }
+    }
+
+    /* get sibling's position */
+    pos = (nonleaf_pos == 0)? 1 : (nonleaf_pos - 1);
+
+    for (; pos < ORDER; pos++)
+    {
+        sibl->parent->child[pos] = sibl->parent->child[pos + 1];
+    }
+
+    free(sibl);
+}
+
+static void tree_steal_from_sibl_nonleaf(Tree *nonleaf, Tree *sibl, int pos)
+{
+    if (pos == 0)
+    {
+        nonleaf->child[1] = sibl->child[0];
+        nonleaf->child[1]->parent = nonleaf;
+
+        for (pos = 0; pos < ORDER; pos++)
+        {
+            sibl->child[pos] = sibl->child[pos + 1];
+        }
+    }
+    else
+    {
+        nonleaf->child[1] = nonleaf->child[0];
+        nonleaf->child[0] = sibl->child[ORDER - 1];
+        nonleaf->child[0]->parent = nonleaf;
+        sibl->child[ORDER - 1] = NULL;
+    }
+}
+
+static int tree_delete_nonleaf_adjust(Tree **in_tree, Tree *nonleaf)
+{
+    int pos;
+    Tree *sibl;
+
+    while ((NULL != nonleaf->parent) && (tree_child_num(nonleaf) == 1))
+    {
+        for (pos = 0; nonleaf->parent->child[pos] != nonleaf; pos++);
+
+        sibl = (pos == 0)? nonleaf->parent->child[1] : nonleaf->parent->child[pos - 1];
+
+        if (tree_child_num(sibl) < ORDER)
+        {
+            tree_merge_two_nonleaf(nonleaf, sibl, pos);
+        }
+        else
+        {
+            tree_steal_from_sibl_nonleaf(nonleaf, sibl, pos);
+        }
+
+        nonleaf = nonleaf->parent;
+    }
+
+    if ((NULL == nonleaf->parent) && (tree_child_num(nonleaf) == 1))
+    {
+        *in_tree = nonleaf->child[0];
+        nonleaf->child[0]->parent = NULL;
+
+        free(nonleaf);
+    }
+
+    return SUCCESS;
+}
+
+static int tree_delete_adjust(Tree **in_tree, Tree *leaf)
+{
+    int result;
+
+    /* child's num satifies b-tree's properties, only need to refresh data */
+    if ((NULL == leaf->parent) || (tree_child_num(leaf) > 1))
+    {
+        tree_refresh_data(*in_tree);
+
+        return SUCCESS;
+    }
+
+    result = tree_delete_leaf_adjust(in_tree, leaf);
+    if (SUCCESS != result)
+    {
+        ERR_MSG("failed to adjust leaf after deletion!\n");
+        return result;
+    }
+
+    result = tree_delete_nonleaf_adjust(in_tree, leaf->parent);
+    if (SUCCESS != result)
+    {
+        ERR_MSG("failed to adjust nonleaf after deletion!\n");
+        return result;
+    }
+
+    tree_refresh_data(*in_tree);
+
+    return SUCCESS;
+}
+
 int tree_delete(Tree **tree, Data *data)
 {
+    int result = SUCCESS;
+    Tree *leaf = NULL;
+
+    if ((NULL == tree) || (NULL == *tree) || (NULL == data))
+    {
+        ERR_MSG("null pointer!\n");
+        return NUL_PTR;
+    }
+
+    result = tree_delete_directly(tree, data, &leaf);
+    if (SUCCESS != result)
+    {
+        ERR_MSG("failed to delete directly!\n");
+        return result;
+    }
+
+    result = tree_delete_adjust(tree, leaf);
+    if (SUCCESS != result)
+    {
+        ERR_MSG("failed to adjust after deletion!\n");
+        return result;
+    }
+
     return SUCCESS;
 }
 
