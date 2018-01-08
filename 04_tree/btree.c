@@ -138,6 +138,26 @@ static Data *tree_min_data(Tree *tree)
     return tree->data[0];
 }
 
+static void tree_refresh_data(Tree *tree)
+{
+    int pos;
+
+    if ((NULL == tree) || (NULL == tree->child[0]))
+    {
+        return;
+    }
+
+    for (pos = 0; pos < ORDER; pos++)
+    {
+        tree_refresh_data(tree->child[pos]);
+    }
+
+    for (pos = 0; pos < ORDER - 1; pos++)
+    {
+        tree->data[pos] = tree_min_data(tree->child[pos + 1]);
+    }
+}
+
 static int tree_leaf_split(Tree *leaf)
 {
     int result;
@@ -260,14 +280,112 @@ static int tree_nonleaf_split(Tree **in_tree, Tree *nonleaf)
     return SUCCESS;
 }
 
+static int tree_find_unfill_sibl(Tree *tree)
+{
+    int pos;
+    int child_num;
+
+    if ((NULL == tree) || (NULL == tree->child[0]))
+    {
+        return ORDER;
+    }
+
+    /* we get priority to the sibling at pos 1, since it simplify the problem */
+    if (tree_child_num(tree->child[1]) < ORDER)
+    {
+        return 1;
+    }
+
+    child_num = tree_child_num(tree);
+
+    for (pos = 0; pos < child_num; pos++)
+    {
+        if (tree_child_num(tree->child[pos]) < ORDER)
+        {
+            return pos;
+        }
+    }
+
+    return ORDER;
+}
+
+static void tree_adopt_data_to_sibl(Tree **tree, Tree *leaf, int sibl_pos)
+{
+    int pos;
+    int leaf_pos;
+    Tree *sibl;
+    Tree *midl;
+
+    /* get position of leaf */
+    for (leaf_pos = 0; leaf->parent->child[leaf_pos] != leaf; leaf_pos++);
+
+    sibl = leaf->parent->child[sibl_pos];
+    midl = leaf->parent->child[1];
+
+    if (leaf_pos - sibl_pos == -2)
+    {
+        for (pos = ORDER - 1; pos > 0; pos--)
+        {
+            sibl->data[pos] = sibl->data[pos - 1];
+        }
+
+        sibl->data[0] = midl->data[ORDER - 1];
+        midl->data[ORDER - 1] = NULL;
+        sibl_pos = 1;
+        sibl = midl;
+    }
+    else if (leaf_pos - sibl_pos == 2)
+    {
+        sibl->data[ORDER - 1] = midl->data[0];
+
+        for (pos = 0; pos < ORDER; pos++)
+        {
+            midl->data[pos] = midl->data[pos + 1];
+        }
+
+        sibl_pos = 1;
+        sibl = midl;
+    }
+
+    if (leaf_pos - sibl_pos == -1)
+    {
+        for (pos = ORDER - 1; pos > 0; pos--)
+        {
+            sibl->data[pos] = sibl->data[pos - 1];
+        }
+
+        sibl->data[0] = leaf->data[ORDER];
+    }
+    else if (leaf_pos - sibl_pos == 1)
+    {
+        sibl->data[ORDER - 1] = leaf->data[0];
+
+        for (pos = 0; pos < ORDER; pos++)
+        {
+            leaf->data[pos] = leaf->data[pos + 1];
+        }
+    }
+
+    leaf->data[ORDER] = NULL;
+
+    tree_refresh_data(*tree);
+}
+
 static int tree_insert_adjust(Tree **in_tree, Tree *leaf)
 {
     int result = SUCCESS;
+    int sibl_pos;
     Tree *tree = *in_tree;
 
     /* num of leaf's data is no more than ORDER, no need adjusting */
     if (tree_child_num(leaf) <= ORDER)
     {
+        return SUCCESS;
+    }
+
+    if ((sibl_pos = tree_find_unfill_sibl(leaf->parent)) != ORDER)
+    {
+        tree_adopt_data_to_sibl(in_tree, leaf, sibl_pos);
         return SUCCESS;
     }
 
@@ -363,26 +481,6 @@ static int tree_delete_directly(Tree **in_tree, Data *data, Tree **target)
     *target = tree;
 
     return SUCCESS;
-}
-
-static void tree_refresh_data(Tree *tree)
-{
-    int pos;
-
-    if ((NULL == tree) || (NULL == tree->child[0]))
-    {
-        return;
-    }
-
-    for (pos = 0; pos < ORDER; pos++)
-    {
-        tree_refresh_data(tree->child[pos]);
-    }
-
-    for (pos = 0; pos < ORDER - 1; pos++)
-    {
-        tree->data[pos] = tree_min_data(tree->child[pos + 1]);
-    }
 }
 
 static void tree_merge_two_leaf(Tree *leaf, Tree *sibl, int leaf_pos)
