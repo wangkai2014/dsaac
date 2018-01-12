@@ -3,14 +3,14 @@
 #include "queue.h"
 #include "cstree.h"
 
-int tree_init(Tree **in_tree, void *data, int data_size)
+int tree_init(Tree **in_tree, void *data, int size)
 {
     int result = SUCCESS;
     Tree *tree = NULL;
 
-    if ((NULL == in_tree) || (NULL == data) || (data_size <= 0))
+    if ((NULL == in_tree) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("invalid input! data_size=%d.\n", data_size);
+        ERR_MSG("invalid input! size=%d.\n", size);
         return INVALID_INPUT;
     }
 
@@ -21,14 +21,14 @@ int tree_init(Tree **in_tree, void *data, int data_size)
         return MALLOC_FAIL;
     }
 
-    tree->data = malloc(data_size);
+    tree->data = malloc(size);
     if (NULL == tree->data)
     {
         ERR_MSG("failed to malloc memory!\n");
         return MALLOC_FAIL;
     }
 
-    memcpy(tree->data, data, data_size);
+    memcpy(tree->data, data, size);
 
     tree->sibl = NULL;
     tree->child = NULL;
@@ -38,14 +38,14 @@ int tree_init(Tree **in_tree, void *data, int data_size)
     return SUCCESS;
 }
 
-int tree_create(Tree **in_tree, Tree *sibl, Tree *child, void *data, int data_size)
+int tree_create(Tree **in_tree, Tree *sibl, Tree *child, void *data, int size)
 {
     int result = SUCCESS;
     Tree *tree = NULL;
 
-    if ((NULL == in_tree) || (NULL == data) || (data_size <= 0))
+    if ((NULL == in_tree) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("invaild input! data_size=%d.\n", data_size);
+        ERR_MSG("invaild input! size=%d.\n", size);
         return INVALID_INPUT;
     }
 
@@ -56,14 +56,14 @@ int tree_create(Tree **in_tree, Tree *sibl, Tree *child, void *data, int data_si
         return MALLOC_FAIL;
     }
 
-    tree->data = malloc(data_size);
+    tree->data = malloc(size);
     if (NULL == tree->data)
     {
         ERR_MSG("failed to malloc memory!\n");
         return MALLOC_FAIL;
     }
 
-    memcpy(tree->data, data, data_size);
+    memcpy(tree->data, data, size);
 
     tree->sibl = sibl;
     tree->child = child;
@@ -78,15 +78,16 @@ static int cmp_data(void *a, void *b, int size)
     return ((*(int *)a > *(int *)b) ? 1 : ((*(int *)a == *(int *)b)? 0 : -1));
 }
 
-int tree_insert(Tree **tree, void *data, int data_size)
+int tree_insert(Tree **tree, void *data, int size)
 {
     int result;
+    int is_left_child;
     Tree **link = NULL;
     Tree *cur = NULL;
 
-    if ((NULL == tree) || (NULL == data) || (data_size <= 0))
+    if ((NULL == tree) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("invalid input! data_size=%d.\n", data_size);
+        ERR_MSG("invalid input! size=%d.\n", size);
         return INVALID_INPUT;
     } 
 
@@ -95,31 +96,33 @@ int tree_insert(Tree **tree, void *data, int data_size)
 
     while (NULL != cur)
     {
-        result = cmp_data(data, cur->data, data_size);
+        result = cmp_data(data, cur->data, size);
         if (0 == result)
         {
             ERR_MSG("the node[%d] has existed!\n", *(int*)data);
             return DUPLICATED;
         }
 
-        if ((result < 0) && (cur->child != NULL) && 
-                (cmp_data(cur->data, cur->child->data, data_size) < 0))
+        if ((NULL == cur->child) || 
+            ((result < 0) && (cmp_data(cur->child->data, cur->data, size) > 0)))
         {
             link = &cur->child;
             break;
         }
 
-        link = &cur->child;
-        cur = cur->child;
-
-        if ((result > 0) && (cur != NULL))
+        if ((result > 0) && (cmp_data(cur->child->data, cur->data, size) < 0))
         {
-            link = &cur->sibl;
-            cur = cur->sibl;
+            link = &cur->child->sibl;
+            cur = cur->child->sibl;
+        }
+        else
+        {
+            link = &cur->child;
+            cur = cur->child;
         }
     }
 
-    result = tree_init(&cur, data, data_size);
+    result = tree_init(&cur, data, size);
     if (SUCCESS != result)
     {
         ERR_MSG("failed to init tree!\n");
@@ -136,7 +139,7 @@ int tree_insert(Tree **tree, void *data, int data_size)
     return SUCCESS;
 }
 
-static int tree_delete_min(Tree **tree, Tree **target)
+static int tree_delete_min(Tree **tree, Tree **target, int size)
 {
     int result = SUCCESS;
     Tree **link = NULL;
@@ -150,13 +153,22 @@ static int tree_delete_min(Tree **tree, Tree **target)
 
     link = tree;
     min = *tree;
-    while (NULL != min->sibl)
+    while ((NULL != min->child) && (cmp_data(min->child->data, min->data, size) < 0))
     {
-        link = &min->sibl;
-        min = min->sibl;
+        link = &min->child;
+        min = min->child;
     }
 
-    *link = min->child;
+    if (NULL == min->child)
+    {
+        *link = min->sibl;
+    }
+    else
+    {
+        *link = min->child;
+        min->child->sibl = min->sibl;
+    }
+
     *target = min;
     
     return SUCCESS;
@@ -167,14 +179,14 @@ static int tree_delete_min(Tree **tree, Tree **target)
  * if cur->data == data, and cur is parent's sibl child, *link = &parent->sibl
  * if cur->data == data, and cur is parent's child child, *link = &parent->child
  */
-int tree_find_parent_link(Tree **tree, Tree ***link, void *data, int data_size)
+int tree_find_parent_link(Tree **tree, Tree ***link, void *data, int size)
 {
     int result = 0;
     Tree *cur = NULL;
 
-    if ((NULL == tree) || (NULL == link) || (NULL == data) || (data_size <= 0))
+    if ((NULL == tree) || (NULL == link) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("invalid input! data_size=%d.\n", data_size);
+        ERR_MSG("invalid input! size=%d.\n", size);
         return INVALID_INPUT;
     }
 
@@ -183,33 +195,55 @@ int tree_find_parent_link(Tree **tree, Tree ***link, void *data, int data_size)
 
     while (NULL != cur)
     {
-        result = cmp_data(data, cur->data, data_size);
+        result = cmp_data(data, cur->data, size);
         if (0 == result)
         {
             return SUCCESS;
         }
-        
-        *link = (result < 0) ? &cur->sibl : &cur->child;
-        cur = (result < 0) ? cur->sibl : cur->child;
+
+        if (NULL == cur->child)
+        {
+            return NOT_FOUND;
+        }
+
+        if ((result < 0) && (cmp_data(cur->child->data, cur->data, size) < 0))
+        {
+            *link = &cur->child;
+            cur = cur->child;
+        }
+        else if ((result > 0) && (cmp_data(cur->child->data, cur->data, size) > 0))
+        {
+            *link = &cur->child;
+            cur = cur->child;
+        }
+        else if ((result > 0) && (cur->child->sibl != NULL))
+        {
+            *link = &cur->child->sibl;
+            cur = cur->child->sibl;
+        }
+        else
+        {
+            return NOT_FOUND;
+        }
     }
 
     return NOT_FOUND;
 }
 
-int tree_delete(Tree **tree, void *data, int data_size)
+int tree_delete(Tree **tree, void *data, int size)
 {
     int result = SUCCESS;
     Tree **link = NULL;
     Tree *cur = NULL;
     Tree *min = NULL;
 
-    if ((NULL == tree) || (NULL == data) || (data_size <= 0))
+    if ((NULL == tree) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("invalid input! data_size=%d.\n", data_size);
+        ERR_MSG("invalid input! size=%d.\n", size);
         return INVALID_INPUT;
     } 
 
-    result = tree_find_parent_link(tree, &link, data, data_size);
+    result = tree_find_parent_link(tree, &link, data, size);
     if (SUCCESS != result)
     {
         ERR_MSG("failed to find parent link!\n");
@@ -218,17 +252,18 @@ int tree_delete(Tree **tree, void *data, int data_size)
 
     cur = *link;
 
-    if (NULL == cur->sibl)
-    {
-        *link = cur->child;
-    }
-    else if (NULL == cur->child)
+    if (NULL == cur->child)
     {
         *link = cur->sibl;
     }
+    else if (NULL == cur->child->sibl)
+    {
+        cur->child->sibl = cur->sibl;
+        *link = cur->child;
+    }
     else
     {
-        result = tree_delete_min(&cur->child, &min);
+        result = tree_delete_min(&cur->child->sibl, &min, size);
         if (SUCCESS != result)
         {
             ERR_MSG("failed to delete min!\n");
@@ -261,20 +296,20 @@ void tree_clear(Tree **tree)
     *tree = NULL;
 }
 
-int tree_find(Tree *tree, Tree **target, void *data, int data_size)
+int tree_find(Tree *tree, Tree **target, void *data, int size)
 {
     int result = 0;
     Tree *cur = tree;
 
-    if ((NULL == tree) || (NULL == target) || (NULL == data) || (data_size <= 0))
+    if ((NULL == tree) || (NULL == target) || (NULL == data) || (size <= 0))
     {
-        ERR_MSG("null pointer! data_size=%d.\n", data_size);
+        ERR_MSG("null pointer! size=%d.\n", size);
         return INVALID_INPUT;
     }
 
     while ((NULL != cur) && (0 != result))
     {
-        result = cmp_data(data, cur->data, data_size);
+        result = cmp_data(data, cur->data, size);
 
         cur = (result < 0) ? cur->sibl : cur->child;
     }
@@ -282,6 +317,63 @@ int tree_find(Tree *tree, Tree **target, void *data, int data_size)
     *target = cur;
 
     return SUCCESS;
+}
+
+void tree_preorder_print_int(Tree *tree)
+{
+    if (NULL == tree)
+    {
+        return;
+    }
+
+    printf("%d ", *(int*)tree->data);
+
+    if (NULL != tree->child)
+    {
+        tree_preorder_print_int(tree->child);
+        tree_preorder_print_int(tree->child->sibl);
+    }
+}
+
+void tree_inorder_print_int(Tree *tree)
+{
+    if (NULL == tree)
+    {
+        return;
+    }
+
+    if ((NULL != tree->child) && (cmp_data(tree->child->data, tree->data, 4) < 0))
+    {
+        tree_inorder_print_int(tree->child);
+    }
+
+    printf("%d ", *(int*)tree->data);
+
+    if ((NULL != tree->child) && (cmp_data(tree->child->data, tree->data, 4) > 0))
+    {
+        tree_inorder_print_int(tree->child);
+    }
+
+    if ((NULL != tree->child) && (NULL != tree->child->sibl))
+    {
+        tree_inorder_print_int(tree->child->sibl);
+    }
+}
+
+void tree_postorder_print_int(Tree *tree)
+{
+    if (NULL == tree)
+    {
+        return;
+    }
+
+    if (NULL != tree->child)
+    {
+        tree_postorder_print_int(tree->child);
+        tree_postorder_print_int(tree->child->sibl);
+    }
+
+    printf("%d ", *(int*)tree->data);
 }
 
 void tree_levelorder_print_int(Tree *in_tree)

@@ -25,6 +25,9 @@ int tree_find(Tree *tree, Tree **target, void *data, int data_size);
 
 int tree_init_by_int_arr(Tree **tree, int *arr, int num);
 
+void tree_preorder_print_int(Tree *tree);
+void tree_inorder_print_int(Tree *tree);
+void tree_postorder_print_int(Tree *tree);
 void tree_levelorder_print_int(Tree *tree);
 
 #endif

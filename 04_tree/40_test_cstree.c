@@ -7,7 +7,10 @@ enum OPER_CODE
     CLEAR        = 1,
     INSERT       = 2,
     DELETE       = 3,
-    LEVEL_PRINT  = 4,
+    PRE_PRINT    = 4,
+    IN_PRINT     = 5,
+    POST_PRINT   = 6,
+    LEVEL_PRINT  = 7,
     QUIT
 };
 
@@ -17,6 +20,9 @@ void test_tree_init(Tree **tree);
 void test_tree_clear(Tree **tree);
 void test_tree_insert(Tree **tree);
 void test_tree_delete(Tree **tree);
+void test_tree_preorder_print(Tree **tree);
+void test_tree_inorder_print(Tree **tree);
+void test_tree_postorder_print(Tree **tree);
 void test_tree_levelorder_print(Tree **tree);
 
 int main()
@@ -27,12 +33,15 @@ int main()
                              test_tree_clear,
                              test_tree_insert,
                              test_tree_delete,
+                             test_tree_preorder_print,
+                             test_tree_inorder_print,
+                             test_tree_postorder_print,
                              test_tree_levelorder_print
     };
 
     while (1)
     {
-        printf("\n0.init 1.clear 2.insert 3.delete 4.level_print 5.quit");
+        printf("\n0.init 1.clear 2.insert 3.delete 4.pre 5.in 6.post 7.level 8.quit");
         printf("\nEnter operation: ");
         scanf("%d", &oper);
 
@@ -144,6 +153,33 @@ void test_tree_delete(Tree **tree)
     free(arr);
 
     printf("\ndelete successfully!");
+}
+
+void test_tree_preorder_print(Tree **tree)
+{
+    printf("\npreorder visit the tree:\n");
+
+    tree_preorder_print_int(*tree);
+
+    printf("\n");
+}
+
+void test_tree_inorder_print(Tree **tree)
+{
+    printf("\ninorder visit the tree:\n");
+
+    tree_inorder_print_int(*tree);
+
+    printf("\n");
+}
+
+void test_tree_postorder_print(Tree **tree)
+{
+    printf("\npostorder visit the tree:\n");
+
+    tree_postorder_print_int(*tree);
+
+    printf("\n");
 }
 
 void test_tree_levelorder_print(Tree **tree)
