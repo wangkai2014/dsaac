@@ -6,7 +6,7 @@ PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
 		 29_random_bstree 29_recur_random_bstree 30_avltree_with_fewest_node \
 		 31_perfect_bstree 32_print_bounded_bstree 33_set_tree_coordinate \
 		 35_tree_level_order 37_test_btree 40_test_cstree \
-     	 41_test_tree_similar 42_test_tree_isomorphic \
+     	 41_test_tree_similar 42_test_tree_isomorphic 43_tree_transform \
 
 BS_OBJ  = bstree.o queue.o list.o utils.o
 BT_OBJ  = btree.o queue.o list.o utils.o
@@ -33,6 +33,7 @@ CS_OBJ  = cstree.o queue.o list.o utils.o
 40_OBJ = 40_test_cstree.o $(CS_OBJ)
 41_OBJ = 41_test_tree_similar.o $(BS_OBJ)
 42_OBJ = 42_test_tree_isomorphic.o $(BS_OBJ)
+43_OBJ = 43_tree_transform.o $(BS_OBJ)
 
 all: $(PROGS)
 
@@ -101,6 +102,9 @@ all: $(PROGS)
 
 42_test_tree_isomorphic: $(42_OBJ)
 	cc $(CFLAGS) -o $@ $(42_OBJ)
+
+43_tree_transform: $(43_OBJ)
+	cc $(CFLAGS) -o $@ $(43_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
