@@ -41,6 +41,7 @@ int tree_init(Tree **in_tree, void *data, int data_size)
 
     tree->left = NULL;
     tree->right = NULL;
+    tree->node_num = 1;
 
     *in_tree = tree;
 
@@ -111,6 +112,7 @@ int tree_insert(Tree **tree, void *data, int data_size)
             return DUPLICATED;
         }
 
+        cur->node_num++;
         link = (result < 0) ? &cur->left : &cur->right;
         cur = (result < 0) ? cur->left : cur->right;
     }
@@ -347,7 +349,7 @@ void tree_inorder_print_int(Tree *tree)
 
     tree_inorder_print_int(tree->left);
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->node_num);
 
     tree_inorder_print_int(tree->right);
 }
@@ -359,7 +361,7 @@ void tree_preorder_print_int(Tree *tree)
         return;
     }
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->node_num);
 
     tree_preorder_print_int(tree->left);
 
@@ -377,7 +379,7 @@ void tree_postorder_print_int(Tree *tree)
 
     tree_postorder_print_int(tree->right);
 
-    printf("%d ", *(int *)tree->data);
+    printf("%d(%d) ", *(int *)tree->data, tree->node_num);
 }
 
 void tree_levelorder_print_int(Tree *in_tree)
@@ -415,7 +417,7 @@ void tree_levelorder_print_int(Tree *in_tree)
             return;
         }
 
-        printf("%d ", *(int *)tree->data);
+        printf("%d(%d) ", *(int *)tree->data, tree->node_num);
 
         if (NULL != tree->left)
         {

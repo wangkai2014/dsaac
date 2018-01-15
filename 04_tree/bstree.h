@@ -22,6 +22,7 @@ struct Tree
     Tree *left;
     Tree *right;
     Position *pos;
+    int node_num;
 };
 
 int tree_init(Tree **tree, void *data, int data_size);
