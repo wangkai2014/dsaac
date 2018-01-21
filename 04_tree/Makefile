@@ -7,11 +7,12 @@ PROGS  = 00_test_stack 00_transform_expr_order 00_test_bstree \
 		 31_perfect_bstree 32_print_bounded_bstree 33_set_tree_coordinate \
 		 35_tree_level_order 37_test_btree 40_test_cstree \
      	 41_test_tree_similar 42_test_tree_isomorphic 43_tree_transform \
-		 44_find_Kth_tree_node \
+		 44_find_Kth_tree_node 45_test_thread_tree \
 
 BS_OBJ  = bstree.o queue.o list.o utils.o
 BT_OBJ  = btree.o queue.o list.o utils.o
 CS_OBJ  = cstree.o queue.o list.o utils.o
+TT_OBJ  = ttree.o queue.o list.o utils.o
 00_AOBJ = 00_test_avltree.o avltree.o stack.o utils.o
 00_BOBJ = 00_test_bstree.o $(BS_OBJ)
 00_LOBJ = 00_test_list.o list.o utils.o
@@ -36,6 +37,7 @@ CS_OBJ  = cstree.o queue.o list.o utils.o
 42_OBJ = 42_test_tree_isomorphic.o $(BS_OBJ)
 43_OBJ = 43_tree_transform.o $(BS_OBJ)
 44_OBJ = 44_find_Kth_tree_node.o $(BS_OBJ)
+45_OBJ = 45_test_thread_tree.o $(TT_OBJ)
 
 all: $(PROGS)
 
@@ -110,6 +112,9 @@ all: $(PROGS)
 
 44_find_Kth_tree_node: $(44_OBJ)
 	cc $(CFLAGS) -o $@ $(44_OBJ)
+
+45_test_thread_tree: $(45_OBJ)
+	cc $(CFLAGS) -o $@ $(45_OBJ)
 
 clean:
 	rm -rf $(PROGS) *.o
