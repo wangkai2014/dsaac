@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "lhash.h"
+#include "qhash.h"
 
 enum OPER_CODE
 {

@@ -1,5 +1,5 @@
-#ifndef __LHASH_H__
-#define __LHASH_H__
+#ifndef __DHASH_H__
+#define __DHASH_H__
 
 #define INVALID_POS    -1
 #define MAX_HASH_ELEM  10000
